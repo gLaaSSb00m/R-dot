@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="cart">
+    <h1>Shopping Cart</h1>
+    {% if cart_items %}
+    <div class="cart-items">
+        {% for item in cart_items %}
+        <div class="cart-item" data-item-id="{{ item.id }}">
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
+            <div class="item-details">
+                <h3>{{ item.product.name }}</h3>
+                <p class="price">${{ item.product.price }}</p>
+                <div class="quantity-controls">
+                    <button class="qty-btn" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:-1 }})">-</button>
+                    <span class="quantity">{{ item.quantity }}</span>
+                    <button class="qty-btn" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:1 }})">+</button>
+                </div>
+            </div>
+            <div class="item-total">
+                <p>${{ item.total }}</p>
+                <button class="remove-btn" onclick="removeItem({{ item.id }})">Remove</button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="cart-summary">
+        <h2>Cart Summary</h2>
+        <p><strong>Total Items:</strong> {{ total_items }}</p>
+        <p><strong>Total Price:</strong> ${{ total_price }}</p>
+        <a href="{% url 'checkout' %}" class="checkout-btn">Proceed to Checkout</a>
+    </div>
+    {% else %}
+    <p>Your cart is empty. <a href="{% url 'products' %}">Continue Shopping</a></p>
+    {% endif %}
+</section>
+
+<script>
+function updateQuantity(itemId, newQuantity) {
+    if (newQuantity < 1) {
+        removeItem(itemId);
+        return;
+    }
+    fetch("{% url 'update_quantity' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: new URLSearchParams({
+            'product_id': itemId,
+            'quantity': newQuantity
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to update quantity: ' + data.error);
+        }
+    });
+}
+
+function removeItem(itemId) {
+    fetch("{% url 'remove_item' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: new URLSearchParams({
+            'product_id': itemId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Failed to remove item: ' + data.error);
+        }
+    });
+}
+</script>
+{% endblock %}

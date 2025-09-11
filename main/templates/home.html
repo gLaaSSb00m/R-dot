@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="banner-slider">
+    {% for banner in banners %}
+    <div class="banner">
+        <img src="{{ banner.image.url }}" alt="{{ banner.title }}" />
+        <div class="banner-text">
+            <h2>{{ banner.subtitle }}</h2>
+            <h1>{{ banner.title }}</h1>
+            {% if banner.link %}
+            <a href="{{ banner.link }}" class="btn-shop">Shop now</a>
+            {% else %}
+            <a href="#" class="btn-shop">Shop now</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</section>
+
+<section class="products">
+    <h2>Featured Products</h2>
+    {% if products %}
+        <div class="product-grid">
+            {% for product in products %}
+                <div class="product-card {% if product.stock_out %}out-of-stock{% endif %}">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+                    <h3>{{ product.name }}</h3>
+                    {% if product.discount_price %}
+                        <p class="price"><del>${{ product.price }}</del> ${{ product.discount_price }}</p>
+                    {% else %}
+                        <p class="price">${{ product.price }}</p>
+                    {% endif %}
+                    {% if product.stock_out %}
+                        <p class="stock-status">Out of Stock</p>
+                    {% else %}
+                        <form method="post" action="{% url 'add_to_cart' %}" onsubmit="return addToCart(event, this);">
+                            {% csrf_token %}
+                            <input type="hidden" name="product_id" value="{{ product.id }}">
+                            <button type="submit" class="btn-add-cart">Add to Cart</button>
+                        </form>
+                    {% endif %}
+                    <p class="description">{{ product.description|truncatechars:100 }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No products available.</p>
+    {% endif %}
+</section>
+
+<script>
+function addToCart(event, form) {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const button = form.querySelector('button[type="submit"]');
+    const originalText = button.textContent;
+
+    // Disable button and show loading
+    button.disabled = true;
+    button.textContent = 'Adding...';
+
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('Product added to cart successfully!', 'success');
+            // Update cart count
+            updateCartCount();
+        } else {
+            showNotification(data.error || 'Failed to add product to cart', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to add product to cart', 'error');
+    })
+    .finally(() => {
+        // Re-enable button
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+
+    return false;
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Style the notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+
+    if (type === 'success') {
+        notification.style.backgroundColor = '#4CAF50';
+    } else {
+        notification.style.backgroundColor = '#f44336';
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+function updateCartCount() {
+    // Update cart count in header
+    fetch('/cart/count/')
+        .then(response => response.json())
+        .then(data => {
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.count || 0;
+            }
+        })
+        .catch(error => console.error('Error updating cart count:', error));
+}
+</script>
+{% endblock %}

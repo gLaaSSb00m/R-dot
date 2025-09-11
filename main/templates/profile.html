@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+.order-item {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f9f9f9;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.order-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.order-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.order-details {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.order-details img {
+    border-radius: 4px;
+}
+
+.order-info p {
+    margin: 0.25rem 0;
+    color: #555;
+}
+
+.btn-shop {
+    display: inline-block;
+    background: #007bff;
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+
+.btn-shop:hover {
+    background: #0056b3;
+}
+</style>
+<section class="profile">
+    <h1>My Profile</h1>
+    <div class="profile-info">
+        <div class="profile-section">
+            <h2>Account Information</h2>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Member since:</strong> {{ user.date_joined|date:"F j, Y" }}</p>
+        </div>
+        <div class="profile-section">
+            <h2>Order History</h2>
+            {% if orders %}
+                {% for order in orders %}
+                <div class="order-item">
+                    <div class="order-header">
+                        <h3>{{ order.product_name }}</h3>
+                        <span class="order-date">{{ order.created_at|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <div class="order-details">
+                        <img src="{{ order.product_image.url }}" alt="{{ order.product_name }}" style="width: 80px; height: 80px; object-fit: cover;" />
+                        <div class="order-info">
+                            <p><strong>Product Code:</strong> {{ order.product_code }}</p>
+                            <p><strong>Quantity:</strong> {{ order.quantity }}</p>
+                            <p><strong>Address:</strong> {{ order.address }}</p>
+                            <p><strong>Mobile:</strong> {{ order.mobile_number }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p>You have no orders yet.</p>
+                <a href="{% url 'products' %}" class="btn-shop">Start Shopping</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

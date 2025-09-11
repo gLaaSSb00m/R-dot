@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="contact-us">
+    <h1>Contact Us</h1>
+    <div class="contact-info">
+        <div class="contact-item">
+            <h3>Phone</h3>
+            <p>01762-275656 / 01721-542688</p>
+        </div>
+        <div class="contact-item">
+            <h3>Email</h3>
+            <p>info@R dot.com</p>
+        </div>
+        <div class="contact-item">
+            <h3>Address</h3>
+            <p>Your Address Here</p>
+        </div>
+    </div>
+    <div class="contact-form">
+        <h2>Send us a message</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" required></textarea>
+            </div>
+            <button type="submit">Send Message</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

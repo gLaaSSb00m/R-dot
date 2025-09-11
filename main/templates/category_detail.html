@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>{{ category.name }}</h2>
+
+<div class="subcategory-names">
+    <ul>
+        {% for item in subcategories_with_products %}
+        <li>{{ item.subcategory.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="subcategory-products">
+    {% for item in subcategories_with_products %}
+    <h3>{{ item.subcategory.name }}</h3>
+    <div class="products">
+        {% for product in item.products %}
+        <div class="product-card">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+            <p>{{ product.name }}</p>
+            <p>৳{{ product.price }}</p>
+            <form method="post" action="{% url 'add_to_cart' %}" onsubmit="return addToCart(event, this);">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" value="{{ product.id }}">
+                <button type="submit" class="btn-add-cart">Add to Cart</button>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function addToCart(event, form) {
+    event.preventDefault();
+    const formData = new FormData(form);
+    const button = form.querySelector('button[type="submit"]');
+    const originalText = button.textContent;
+
+    // Disable button and show loading
+    button.disabled = true;
+    button.textContent = 'Adding...';
+
+    fetch(form.action, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': formData.get('csrfmiddlewaretoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showNotification('Product added to cart successfully!', 'success');
+            // Update cart count
+            updateCartCount();
+        } else {
+            showNotification(data.error || 'Failed to add product to cart', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Failed to add product to cart', 'error');
+    })
+    .finally(() => {
+        // Re-enable button
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+
+    return false;
+}
+
+function showNotification(message, type) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+
+    // Style the notification
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 5px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+
+    if (type === 'success') {
+        notification.style.backgroundColor = '#4CAF50';
+    } else {
+        notification.style.backgroundColor = '#f44336';
+    }
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+function updateCartCount() {
+    // Update cart count in header
+    fetch('/cart/count/')
+        .then(response => response.json())
+        .then(data => {
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount) {
+                cartCount.textContent = data.count || 0;
+            }
+        })
+        .catch(error => console.error('Error updating cart count:', error));
+}
+</script>
+{% endblock %}

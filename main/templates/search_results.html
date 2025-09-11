@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="search-results">
+    <h1>Search Results for "{{ query }}"</h1>
+    {% if products %}
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card {% if product.stock_out %}out-of-stock{% endif %}">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+            <h3>{{ product.name }}</h3>
+            {% if product.discount_price %}
+                <p class="price"><del>${{ product.price }}</del> ${{ product.discount_price }}</p>
+            {% else %}
+                <p class="price">${{ product.price }}</p>
+            {% endif %}
+            {% if product.stock_out %}
+                <p class="stock-status">Out of Stock</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No products found matching your search.</p>
+    {% endif %}
+</section>
+{% endblock %}

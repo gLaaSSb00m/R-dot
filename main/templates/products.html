@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="blogs">
+    <h1>Blog Posts</h1>
+    {% if blogs %}
+        <div class="blog-list">
+            {% for blog in blogs %}
+                <div class="blog-post">
+                    <h3>{{ blog.title }}</h3>
+                    <p class="author">By {{ blog.author|default:"Anonymous" }} on {{ blog.created_at|date:"F j, Y" }}</p>
+                    <p class="content">{{ blog.content|truncatechars:200 }}</p>
+                    {% if blog.related_product %}
+                        <p class="related-product">Related Product: {{ blog.related_product.name }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No blog posts available.</p>
+    {% endif %}
+</section>
+{% endblock %}

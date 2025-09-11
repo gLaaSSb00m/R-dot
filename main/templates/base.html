@@ -1,0 +1,136 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>R dot - Customized Jerseys</title>
+        <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+        <script src="{% static 'js/dropdown.js' %}" defer></script>
+    </head>
+    <body>
+    <header>
+        <div class="top-bar">
+            <div class="contact-info">
+                <span>CALL: 01762-275656 / 01721-542688</span>
+            </div>
+            <div class="top-links">
+                <a href="{% url 'about_us' %}">ABOUT US</a>
+                <a href="{% url 'contact_us' %}">CONTACT US</a>
+                <a href="{% url 'products' %}">PRODUCTS</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}">MY PROFILE</a>
+                    <a href="{% url 'logout' %}">LOGOUT</a>
+                {% else %}
+                    <a href="{% url 'login' %}">LOGIN</a>
+                    <a href="{% url 'signup' %}">SIGN UP</a>
+                {% endif %}
+            </div>
+        </div>
+        <nav class="main-nav">
+            <button class="menu-toggle">&#9776;</button>
+            <div class="logo">
+                <a href="{% url 'home' %}">R dot</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'home' %}" class="active">HOME</a></li>
+                {% for category in nav_categories %}
+                <li><a href="{% url 'category_detail' category.id %}">{{ category.name }}</a></li>
+                {% endfor %}
+                {% if all_categories|length > nav_categories|length %}
+                <li class="dropdown">
+                    <a href="#">More</a>
+                    <ul class="dropdown-menu">
+                        {% for category in all_categories|slice:"5:" %}
+                        <li><a href="{% url 'category_detail' category.id %}">{{ category.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+            <div class="search-cart">
+                <form action="{% url 'search' %}" method="get">
+                    <input type="text" name="q" placeholder="Search product ..." />
+                    <button type="submit" class="search-btn">&#128269;</button>
+                </form>
+<a href="{% url 'cart' %}" class="cart-icon">&#128722;<span class="cart-count">{{ cart_item_count }}</span></a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>R dot</h3>
+                <p>Your trusted partner for customized jerseys and sports apparel. Quality craftsmanship with personalized designs.</p>
+                <div class="contact-info">
+                    <p><strong>Phone:</strong> 01762-275656 / 01721-542688</p>
+                    <p><strong>Email:</strong> info@R dot.com</p>
+                </div>
+            </div>
+
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li><a href="{% url 'about_us' %}">About Us</a></li>
+                    <li><a href="{% url 'products' %}">Products</a></li>
+                    <li><a href="#">Custom Orders</a></li>
+                    <li><a href="#">Size Guide</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Customer Service</h3>
+                <ul>
+                    <li><a href="{% url 'contact_us' %}">Contact Us</a></li>
+                    <li><a href="#">Shipping Info</a></li>
+                    <li><a href="#">Returns & Exchanges</a></li>
+                    <li><a href="#">FAQ</a></li>
+                    <li><a href="#">Track Order</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-section">
+                <h3>Connect With Us</h3>
+                <div class="social-links">
+                    <a href="#" class="social-icon">📘 Facebook</a>
+                    <a href="#" class="social-icon">📷 Instagram</a>
+                    <a href="#" class="social-icon">🐦 Twitter</a>
+                    <a href="#" class="social-icon">💼 LinkedIn</a>
+                </div>
+                <div class="newsletter">
+                    <h4>Newsletter</h4>
+                    <p>Subscribe for latest updates and offers</p>
+                    <div class="newsletter-signup">
+                        <input type="email" placeholder="Enter your email" />
+                        <button type="submit">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="payment-methods">
+                <span>We Accept:</span>
+                <span>💳 Bkash</span>
+                <span>💳 Nagad</span>
+                <span>💰 Cash on Delivery</span>
+            </div>
+            <p>&copy; 2024 R dot. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>
