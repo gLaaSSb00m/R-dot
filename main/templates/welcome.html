@@ -8,7 +8,7 @@
 <style>html, body { overflow: hidden; }</style>
 <section class="welcome-section" style="padding: 40px 0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
     <div class="welcome-container" style="width: 100%; max-width: none; display: flex; justify-content: space-between; align-items: flex-start;">
-        <div id="gadgets-section" class="welcome-content active" style="width: 50%; background-image: url('{% static 'images/still-life-wireless-cyberpunk-headphones.jpg' %}'); background-size: cover; background-position: center; color: white; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; padding-right: 0;">
+        <div id="gadgets-section" class="welcome-content active gadgets-section">
             <div style="padding: 20px;">
                 <h2>Gadgets</h2>
                 <button class="tab-btn" onclick="showSection('fashion')">View Fashion</button>
@@ -41,7 +41,7 @@
                 <p>No gadgets available.</p>
             {% endif %}
         </div>
-        <div id="fashion-section" class="welcome-content" style="width: 50%; background-image: url('{% static 'images/O9HD520.jpg' %}'); background-size: cover; background-position: center; color: white; min-height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div id="fashion-section" class="welcome-content fashion-section">
             <div style="padding: 20px;">
                 <h2>Fashion</h2>
                 <button class="tab-btn" onclick="showSection('gadgets')">View Gadgets</button>

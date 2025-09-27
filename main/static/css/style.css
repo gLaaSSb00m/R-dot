@@ -1144,3 +1144,30 @@ footer {
     display: block;
     margin-top: 2px;
 }
+
+.gadgets-section {
+    width: 50%;
+    background-image: url('/static/images/still-life-wireless-cyberpunk-headphones.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding-right: 0;
+}
+
+.fashion-section {
+    width: 50%;
+    background-image: url('/static/images/O9HD520.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
