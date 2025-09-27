@@ -9,6 +9,7 @@
         <script src="{% static 'js/dropdown.js' %}" defer></script>
     </head>
     <body>
+    {% block header %}
     <header>
         <div class="top-bar">
             <div class="contact-info">
@@ -57,6 +58,7 @@
             </div>
         </nav>
     </header>
+    {% endblock %}
 
     <main>
         {% if messages %}
@@ -70,6 +72,7 @@
         {% endblock %}
     </main>
 
+    {% block footer %}
     <footer>
         <div class="footer-content">
             <div class="footer-section">
@@ -132,5 +135,6 @@
             <p>&copy; 2024 R dot. All rights reserved.</p>
         </div>
     </footer>
+    {% endblock %}
 </body>
 </html>
