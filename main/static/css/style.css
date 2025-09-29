@@ -163,13 +163,13 @@ header {
 .banner-slider {
     display: flex;
     justify-content: center;
-    margin: 20px 0;
-    gap: 20px;
+    margin: 0 0 20px 0;
+    gap: 0;
 }
 
 .banner {
     position: relative;
-    width: 48%;
+    width: 50%;
     overflow: hidden;
     border-radius: 5px;
 }
@@ -1170,4 +1170,31 @@ footer {
     flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+/* Add background box style for Show Gadgets and Show Fashion links */
+.gadgets-section a,
+.fashion-section a {
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+.gadgets-section a:hover,
+.fashion-section a:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+/* Center content inside the inner divs of gadgets-section and fashion-section */
+.gadgets-section > div,
+.fashion-section > div {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
 }

@@ -11,20 +11,15 @@ from .models import Product, Category, Banner, Subcategory, Blog, NewOrder
 from .forms import CustomUserCreationForm, CheckoutForm
 
 def home(request):
-    # Fetch gadgets and fashion products
-    try:
-        gadgets_category = Category.objects.get(name='Gadgets')
-        gadgets_products = Product.objects.filter(category=gadgets_category)[:8]
-    except Category.DoesNotExist:
-        gadgets_products = []
+    type_name = request.GET.get('type')
+    if type_name:
+        products = Product.objects.filter(subcategory__category__type__name=type_name)[:8]
+    else:
+        products = Product.objects.all()[:8]
+    return render(request, 'home.html', {'banners': Banner.objects.all(), 'products': products})
 
-    try:
-        fashion_category = Category.objects.get(name='Fashion')
-        fashion_products = Product.objects.filter(category=fashion_category)[:8]
-    except Category.DoesNotExist:
-        fashion_products = []
-
-    return render(request, 'welcome.html', {'gadgets_products': gadgets_products, 'fashion_products': fashion_products})
+def welcome(request):
+    return render(request, 'welcome.html')
 
 def category_detail(request, category_id):
     category = get_object_or_404(Category, id=category_id)

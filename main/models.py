@@ -9,7 +9,14 @@ class Banner(models.Model):
     def __str__(self):
         return self.title
 
+class Type(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 class Category(models.Model):
+    type = models.ForeignKey(Type, on_delete=models.CASCADE, related_name='categories', null=True, blank=True)
     name = models.CharField(max_length=200)
 
     def __str__(self):
