@@ -19,11 +19,15 @@
 </section>
 
 <section class="type-filters">
-    <h3>Shop by Type</h3>
-    <div class="filter-buttons">
-        <a href="?type=Fashion" class="filter-btn">Fashion</a>
-        <a href="?type=Gadget" class="filter-btn">Gadget</a>
-    </div>
+    <h3>Switch</h3>
+    <form method="get" class="filter-form">
+        <div class="toggle-switch">
+            <input type="radio" id="fashion" name="type" value="Fashion" {% if request.GET.type == 'Fashion' %}checked{% endif %} onchange="this.form.submit()">
+            <label for="fashion">Fashion</label>
+            <input type="radio" id="gadget" name="type" value="Gadget" {% if request.GET.type == 'Gadget' %}checked{% endif %} onchange="this.form.submit()">
+            <label for="gadget">Gadget</label>
+        </div>
+    </form>
 </section>
 
 <section class="products">
@@ -58,6 +62,18 @@
 </section>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fashionInput = document.getElementById('fashion');
+    const gadgetInput = document.getElementById('gadget');
+    const toggle = document.querySelector('.toggle-switch');
+
+    if (fashionInput && fashionInput.checked) {
+        toggle.classList.add('fashion-selected');
+    } else if (gadgetInput && gadgetInput.checked) {
+        toggle.classList.add('gadget-selected');
+    }
+});
+
 function addToCart(event, form) {
     event.preventDefault();
     const formData = new FormData(form);
