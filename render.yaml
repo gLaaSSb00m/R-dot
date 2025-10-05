@@ -2,7 +2,7 @@ services:
   - type: web
     name: r-dot
     runtime: python3
-    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput --clear"
+    buildCommand: "pip install -r requirements.txt && python manage.py migrate && python manage.py collectstatic --noinput --clear"
     startCommand: "python manage.py runserver 0.0.0.0:$PORT"
     envVars:
       - key: DEBUG
