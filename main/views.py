@@ -14,9 +14,11 @@ def home(request):
     type_name = request.GET.get('type')
     if type_name:
         products = Product.objects.filter(subcategory__category__type__name=type_name)[:8]
+        banners = Banner.objects.filter(category__type__name=type_name)
     else:
         products = Product.objects.all()[:8]
-    return render(request, 'home.html', {'banners': Banner.objects.all(), 'products': products})
+        banners = Banner.objects.all()
+    return render(request, 'home.html', {'banners': banners, 'products': products})
 
 def welcome(request):
     return render(request, 'welcome.html')
@@ -55,11 +57,26 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            if user.is_staff:
+                messages.error(request, 'Admin users must login via the admin login page')
+                return redirect('login')
             login(request, user)
             return redirect('home')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')
+
+def admin_login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            return redirect('admin:index')
+        else:
+            messages.error(request, 'Invalid admin credentials or not an admin user')
+    return render(request, 'admin_login.html')
 
 def signup(request):
     if request.method == 'POST':
