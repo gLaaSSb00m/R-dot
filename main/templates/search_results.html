@@ -10,9 +10,9 @@
             <img src="{{ product.image.url }}" alt="{{ product.name }}" />
             <h3>{{ product.name }}</h3>
             {% if product.discount_price %}
-                <p class="price"><del>${{ product.price }}</del> ${{ product.discount_price }}</p>
+                <p class="price"><del>৳{{ product.price }}</del> ৳{{ product.discount_price }}</p>
             {% else %}
-                <p class="price">${{ product.price }}</p>
+                <p class="price">৳{{ product.price }}</p>
             {% endif %}
             {% if product.stock_out %}
                 <p class="stock-status">Out of Stock</p>

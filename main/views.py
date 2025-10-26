@@ -32,6 +32,18 @@ def category_detail(request, category_id):
         subcategories_with_products.append({'subcategory': subcategory, 'products': products})
     return render(request, 'category_detail.html', {'category': category, 'subcategories_with_products': subcategories_with_products})
 
+def subcategory_detail(request, subcategory_id):
+    subcategory = get_object_or_404(Subcategory, id=subcategory_id)
+    category_name = subcategory.category.name.lower()
+    if category_name == 'fashion':
+        subcategories = Subcategory.objects.filter(category__name__iexact='fashion')
+    elif category_name == 'gadget':
+        subcategories = Subcategory.objects.filter(category__name__iexact='gadget')
+    else:
+        subcategories = Subcategory.objects.filter(category=subcategory.category)
+    products = subcategory.products.all()
+    return render(request, 'subcategory_detail.html', {'subcategory': subcategory, 'products': products, 'subcategories': subcategories})
+
 def search(request):
     query = request.GET.get('q', '')
     products = []
@@ -309,6 +321,14 @@ def checkout(request):
         except Product.DoesNotExist:
             pass
 
+    banner_id = request.GET.get('banner')
+    banner = None
+    if banner_id:
+        try:
+            banner = Banner.objects.get(id=banner_id)
+        except Banner.DoesNotExist:
+            pass
+
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
         if form.is_valid():
@@ -337,5 +357,6 @@ def checkout(request):
     return render(request, 'checkout.html', {
         'form': form,
         'cart_items': cart_data,
-        'total_price': total_price
+        'total_price': total_price,
+        'banner': banner
     })

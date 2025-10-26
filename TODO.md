@@ -1,2 +1,6 @@
-- [x] Edit main/templates/welcome.html to update the "Show Gadgets" link href to include ?type=Gadget
-- [x] Edit main/templates/welcome.html to update the "Show Fashion" link href to include ?type=Fashion
+- [x] Update context_processors.py to provide subcategories for navbar instead of categories
+- [x] Modify base.html to display subcategory names in navbar and link to subcategory_detail
+- [x] Add subcategory_detail URL in urls.py
+- [x] Create subcategory_detail view in views.py
+- [x] Create subcategory_detail.html template
+- [x] Test the changes

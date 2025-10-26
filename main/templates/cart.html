@@ -10,7 +10,7 @@
             <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
             <div class="item-details">
                 <h3>{{ item.product.name }}</h3>
-                <p class="price">${{ item.product.price }}</p>
+                <p class="price">৳{{ item.product.price }}</p>
                 <div class="quantity-controls">
                     <button class="qty-btn" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:-1 }})">-</button>
                     <span class="quantity">{{ item.quantity }}</span>
@@ -18,7 +18,7 @@
                 </div>
             </div>
             <div class="item-total">
-                <p>${{ item.total }}</p>
+                <p>৳{{ item.total }}</p>
                 <button class="remove-btn" onclick="removeItem({{ item.id }})">Remove</button>
             </div>
         </div>
@@ -27,7 +27,7 @@
     <div class="cart-summary">
         <h2>Cart Summary</h2>
         <p><strong>Total Items:</strong> {{ total_items }}</p>
-        <p><strong>Total Price:</strong> ${{ total_price }}</p>
+        <p><strong>Total Price:</strong> ৳{{ total_price }}</p>
         <a href="{% url 'checkout' %}" class="checkout-btn">Proceed to Checkout</a>
     </div>
     {% else %}
