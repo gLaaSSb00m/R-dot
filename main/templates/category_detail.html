@@ -3,14 +3,6 @@
 {% block content %}
 <h2>{{ category.name }}</h2>
 
-<div class="subcategory-names">
-    <ul>
-        {% for item in subcategories_with_products %}
-        <li>{{ item.subcategory.name }}</li>
-        {% endfor %}
-    </ul>
-</div>
-
 <div class="subcategory-products">
     {% for item in subcategories_with_products %}
     <h3>{{ item.subcategory.name }}</h3>

@@ -59,9 +59,7 @@ def about_us(request):
 def contact_us(request):
     return render(request, 'contact_us.html')
 
-def products(request):
-    blogs = Blog.objects.all().order_by('-created_at')[:5]  # Get latest 5 blog posts
-    return render(request, 'products.html', {'blogs': blogs})
+
 
 def login_view(request):
     if request.method == 'POST':

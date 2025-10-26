@@ -17,7 +17,7 @@
             <div class="top-links">
                 <a href="{% url 'about_us' %}">ABOUT US</a>
                 <a href="{% url 'contact_us' %}">CONTACT US</a>
-                <a href="{% url 'products' %}">PRODUCTS</a>
+
                 {% if user.is_authenticated %}
                     <a href="{% url 'profile' %}">MY PROFILE</a>
                     <a href="{% url 'logout' %}">LOGOUT</a>
@@ -98,7 +98,7 @@
                 <ul>
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="{% url 'about_us' %}">About Us</a></li>
-                    <li><a href="{% url 'products' %}">Products</a></li>
+
                     <li><a href="#">Custom Orders</a></li>
                     <li><a href="#">Size Guide</a></li>
                 </ul>
