@@ -1,14 +1,5 @@
 from django.db import models
 
-class Banner(models.Model):
-    title = models.CharField(max_length=100)
-    subtitle = models.CharField(max_length=200)
-    image = models.ImageField(upload_to='banners/')
-    link = models.URLField(blank=True, null=True)
-
-    def __str__(self):
-        return self.title
-
 class Type(models.Model):
     name = models.CharField(max_length=100)
 
@@ -21,6 +12,16 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+class Banner(models.Model):
+    title = models.CharField(max_length=100)
+    subtitle = models.CharField(max_length=200)
+    image = models.ImageField(upload_to='banners/')
+    link = models.URLField(blank=True, null=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='banners', null=True, blank=True)
+
+    def __str__(self):
+        return self.title
 
 class Subcategory(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='subcategories')

@@ -1,2 +1,3 @@
-- [x] Edit main/templates/welcome.html to update the "Show Gadgets" link href to include ?type=Gadget
-- [x] Edit main/templates/welcome.html to update the "Show Fashion" link href to include ?type=Fashion
+- [x] Add context processor to control toggle visibility
+- [x] Update settings.py to include new context processor
+- [x] Modify base.html to conditionally show toggle button

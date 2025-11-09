@@ -29,10 +29,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-rw2z0-cobcj*+52@x(_s9n)tx=ugoxrvc7#rv(c&vir9r9%v@8')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEBUG = True
 
-ALLOWED_HOSTS = ['r-dot-1.onrender.com']
-#https://r-dot-1.onrender.com
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'r-dot.onrender.com']
+
 
 # Application definition
 
@@ -70,7 +70,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'main.context_processors.categories_processor',
+                'main.context_processors.subcategories_processor',
                 'main.context_processors.cart_item_count',
+                'main.context_processors.toggle_visibility_processor',
             ],
         },
     },

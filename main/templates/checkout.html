@@ -2,23 +2,26 @@
 
 {% block content %}
 <section class="checkout">
-    <h1>Checkout</h1>
 
     <div class="checkout-container">
         <div class="order-summary">
             <h2>Order Summary</h2>
             {% for item in cart_items %}
             <div class="summary-item">
+                {% if banner %}
+                <img src="{{ banner.image.url }}" alt="{{ banner.title }}" />
+                {% else %}
                 <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
+                {% endif %}
                 <div class="item-details">
                     <h3>{{ item.product.name }}</h3>
                     <p>Quantity: {{ item.quantity }}</p>
-                    <p>Price: ${{ item.total }}</p>
+                    <p>Price: ৳{{ item.total }}</p>
                 </div>
             </div>
             {% endfor %}
             <div class="total">
-                <strong>Total: ${{ total_price }}</strong>
+                <strong>Total: ৳{{ total_price }}</strong>
             </div>
         </div>
 

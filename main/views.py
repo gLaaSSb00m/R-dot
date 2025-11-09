@@ -14,9 +14,11 @@ def home(request):
     type_name = request.GET.get('type')
     if type_name:
         products = Product.objects.filter(subcategory__category__type__name=type_name)[:8]
+        banners = Banner.objects.filter(category__type__name=type_name)
     else:
         products = Product.objects.all()[:8]
-    return render(request, 'home.html', {'banners': Banner.objects.all(), 'products': products})
+        banners = Banner.objects.all()
+    return render(request, 'home.html', {'banners': banners, 'products': products})
 
 def welcome(request):
     return render(request, 'welcome.html')
@@ -29,6 +31,18 @@ def category_detail(request, category_id):
         products = subcategory.products.all()
         subcategories_with_products.append({'subcategory': subcategory, 'products': products})
     return render(request, 'category_detail.html', {'category': category, 'subcategories_with_products': subcategories_with_products})
+
+def subcategory_detail(request, subcategory_id):
+    subcategory = get_object_or_404(Subcategory, id=subcategory_id)
+    category_name = subcategory.category.name.lower()
+    if category_name == 'fashion':
+        subcategories = Subcategory.objects.filter(category__name__iexact='fashion')
+    elif category_name == 'gadget':
+        subcategories = Subcategory.objects.filter(category__name__iexact='gadget')
+    else:
+        subcategories = Subcategory.objects.filter(category=subcategory.category)
+    products = subcategory.products.all()
+    return render(request, 'subcategory_detail.html', {'subcategory': subcategory, 'products': products, 'subcategories': subcategories})
 
 def search(request):
     query = request.GET.get('q', '')
@@ -45,9 +59,7 @@ def about_us(request):
 def contact_us(request):
     return render(request, 'contact_us.html')
 
-def products(request):
-    blogs = Blog.objects.all().order_by('-created_at')[:5]  # Get latest 5 blog posts
-    return render(request, 'products.html', {'blogs': blogs})
+
 
 def login_view(request):
     if request.method == 'POST':
@@ -55,11 +67,26 @@ def login_view(request):
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
         if user is not None:
+            if user.is_staff:
+                messages.error(request, 'Admin users must login via the admin login page')
+                return redirect('login')
             login(request, user)
             return redirect('home')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')
+
+def admin_login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None and user.is_staff:
+            login(request, user)
+            return redirect('admin:index')
+        else:
+            messages.error(request, 'Invalid admin credentials or not an admin user')
+    return render(request, 'admin_login.html')
 
 def signup(request):
     if request.method == 'POST':
@@ -292,6 +319,14 @@ def checkout(request):
         except Product.DoesNotExist:
             pass
 
+    banner_id = request.GET.get('banner')
+    banner = None
+    if banner_id:
+        try:
+            banner = Banner.objects.get(id=banner_id)
+        except Banner.DoesNotExist:
+            pass
+
     if request.method == 'POST':
         form = CheckoutForm(request.POST)
         if form.is_valid():
@@ -320,5 +355,6 @@ def checkout(request):
     return render(request, 'checkout.html', {
         'form': form,
         'cart_items': cart_data,
-        'total_price': total_price
+        'total_price': total_price,
+        'banner': banner
     })

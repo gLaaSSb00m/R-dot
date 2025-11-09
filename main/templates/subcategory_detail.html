@@ -1,43 +1,30 @@
 {% extends 'base.html' %}
-{% load static %}
-
-{% block header %}
-{% endblock %}
 
 {% block content %}
-<style>html, body { overflow: hidden; margin: 0; padding: 0; }</style>
-<section class="banner-slider">
-    {% for banner in banners %}
-    <div class="banner">
-        <img src="{{ banner.image.url }}" alt="{{ banner.title }}" />
-        <div class="banner-text">
-            <h2>{{ banner.subtitle }}</h2>
-            <h1>{{ banner.title }}</h1>
-            {% if banner.link %}
-            <a href="{{ banner.link }}" class="btn-shop">Shop now</a>
-            {% else %}
-            <a href="#" class="btn-shop">Shop now</a>
-            {% endif %}
-        </div>
+<h2>{{ subcategory.name }}</h2>
+
+<div class="subcategory-names">
+    <ul>
+        {% for subcat in subcategories %}
+        <li>{{ subcat.name }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div class="products">
+    {% for product in products %}
+    <div class="product-card">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+        <p>{{ product.name }}</p>
+        <p>৳{{ product.price }}</p>
+        <form method="post" action="{% url 'add_to_cart' %}" onsubmit="return addToCart(event, this);">
+            {% csrf_token %}
+            <input type="hidden" name="product_id" value="{{ product.id }}">
+            <button type="submit" class="btn-add-cart">Add to Cart</button>
+        </form>
     </div>
     {% endfor %}
-</section>
-<section class="welcome-section" style="padding: 0 0 0 0; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh;">
-    <div class="welcome-container" style="width: 100%; max-width: none; display: flex; justify-content: space-between; align-items: flex-start;">
-        <div id="gadgets-section" class="welcome-content active gadgets-section">
-            <div style="padding: 20px;">
-                <h2>Gadgets</h2>
-                <a href="{% url 'home' %}?type=Gadget" class="tab-btn">Show Gadgets</a>
-            </div>
-        </div>
-        <div id="fashion-section" class="welcome-content fashion-section">
-            <div style="padding: 20px;">
-                <h2>Fashion</h2>
-                <a href="{% url 'home' %}?type=Fashion" class="tab-btn">Show Fashion</a>
-            </div>
-        </div>
-    </div>
-</section>
+</div>
 
 <script>
 function addToCart(event, form) {
@@ -85,7 +72,7 @@ function addToCart(event, form) {
 function showNotification(message, type) {
     // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification ৳{type}`;
+    notification.className = `notification ${type}`;
     notification.textContent = message;
 
     // Style the notification
@@ -131,28 +118,5 @@ function updateCartCount() {
         })
         .catch(error => console.error('Error updating cart count:', error));
 }
-
-function showSection(sectionName) {
-    // Highlight the selected section
-    const sections = document.querySelectorAll('.welcome-content');
-    sections.forEach(section => section.classList.remove('focused'));
-    const targetSection = document.getElementById(sectionName + '-section');
-    if (targetSection) {
-        targetSection.classList.add('focused');
-        // Scroll to the section
-        targetSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        // Save the current section to localStorage
-        localStorage.setItem('activeWelcomeSection', sectionName);
-    }
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    const savedSection = localStorage.getItem('activeWelcomeSection');
-    const sectionToShow = savedSection && (savedSection === 'gadgets' || savedSection === 'fashion') ? savedSection : 'gadgets';
-    showSection(sectionToShow);
-});
 </script>
-{% endblock %}
-
-{% block footer %}
 {% endblock %}

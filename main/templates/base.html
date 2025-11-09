@@ -13,12 +13,11 @@
     <header>
         <div class="top-bar">
             <div class="contact-info">
-                <span>CALL: 01762-275656 / 01721-542688</span>
             </div>
             <div class="top-links">
                 <a href="{% url 'about_us' %}">ABOUT US</a>
                 <a href="{% url 'contact_us' %}">CONTACT US</a>
-                <a href="{% url 'products' %}">PRODUCTS</a>
+
                 {% if user.is_authenticated %}
                     <a href="{% url 'profile' %}">MY PROFILE</a>
                     <a href="{% url 'logout' %}">LOGOUT</a>
@@ -27,6 +26,18 @@
                     <a href="{% url 'signup' %}">SIGN UP</a>
                 {% endif %}
             </div>
+            {% if show_toggle %}
+            <div class="fashion-gadget-switch">
+            <form method="get" class="filter-form">
+                <div class="toggle-switch">
+                    <input type="radio" id="fashion" name="type" value="Fashion" {% if request.GET.type == 'Fashion' %}checked{% endif %} onchange="this.form.submit()">
+                    <label for="fashion">Fashion</label>
+                    <input type="radio" id="gadget" name="type" value="Gadget" {% if request.GET.type == 'Gadget' %}checked{% endif %} onchange="this.form.submit()">
+                    <label for="gadget">Gadget</label>
+                </div>
+            </form>
+        </div>
+        {% endif %}
         </div>
         <nav class="main-nav">
             <button class="menu-toggle">&#9776;</button>
@@ -34,16 +45,16 @@
                 <a href="{% url 'home' %}">R dot</a>
             </div>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}" class="active">HOME</a></li>
-                {% for category in nav_categories %}
-                <li><a href="{% url 'category_detail' category.id %}">{{ category.name }}</a></li>
+                <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
+                {% for subcategory in nav_subcategories %}
+                <li><a href="{% url 'subcategory_detail' subcategory.id %}" class="{% if request.resolver_match.url_name == 'subcategory_detail' and request.resolver_match.kwargs.subcategory_id == subcategory.id|stringformat:'s' %}active{% endif %}">{{ subcategory.name }}</a></li>
                 {% endfor %}
-                {% if all_categories|length > nav_categories|length %}
+                {% if all_subcategories|length > nav_subcategories|length %}
                 <li class="dropdown">
                     <a href="#">More</a>
                     <ul class="dropdown-menu">
-                        {% for category in all_categories|slice:"5:" %}
-                        <li><a href="{% url 'category_detail' category.id %}">{{ category.name }}</a></li>
+                        {% for subcategory in all_subcategories|slice:"5:" %}
+                        <li><a href="{% url 'subcategory_detail' subcategory.id %}" class="{% if request.resolver_match.url_name == 'subcategory_detail' and request.resolver_match.kwargs.subcategory_id == subcategory.id|stringformat:'s' %}active{% endif %}">{{ subcategory.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
@@ -89,7 +100,7 @@
                 <ul>
                     <li><a href="{% url 'home' %}">Home</a></li>
                     <li><a href="{% url 'about_us' %}">About Us</a></li>
-                    <li><a href="{% url 'products' %}">Products</a></li>
+
                     <li><a href="#">Custom Orders</a></li>
                     <li><a href="#">Size Guide</a></li>
                 </ul>
