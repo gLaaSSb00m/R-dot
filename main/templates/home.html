@@ -53,7 +53,7 @@
         <div class="search-cart">
             <form action="{% url 'search' %}" method="get">
                 <input type="text" name="q" placeholder="Search product ..." />
-                <button type="submit" class="search-btn">&#128269;</button>
+                <button type="submit" class="search-btn">&#128269;</button> 
             </form>
 <a href="{% url 'cart' %}" class="cart-icon">&#128722;<span class="cart-count">{{ cart_item_count }}</span></a>
         </div>
@@ -65,14 +65,16 @@
 <section class="banner-slider">
     {% for banner in banners %}
     <div class="banner">
-        <img src="{{ banner.image.url }}" alt="{{ banner.title }}" />
-        <div class="banner-text">
-            <h2>{{ banner.subtitle }}</h2>
-            <h1>{{ banner.title }}</h1>
-            {% if banner.link %}
-            <a href="{{ banner.link }}" class="btn-shop">Shop now</a>
+        <img src="{{ banner.image.url }}" alt="Banner Image" />
+        <div class="banner-overlay">
+            {% if banner.product and not banner.product.stock_out %}
+                <form method="post" action="{% url 'add_to_cart' %}" class="banner-cart-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="product_id" value="{{ banner.product.id }}">
+                    <button type="submit" class="btn-shop">Shop Now</button>
+                </form>
             {% else %}
-            <a href="{% url 'checkout' %}?banner={{ banner.id }}" class="btn-shop">Shop now</a>
+                <button class="btn-shop" disabled>Shop Now</button>
             {% endif %}
         </div>
     </div>

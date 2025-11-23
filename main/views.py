@@ -13,8 +13,8 @@ from .forms import CustomUserCreationForm, CheckoutForm
 def home(request):
     type_name = request.GET.get('type')
     if type_name:
-        products = Product.objects.filter(subcategory__category__type__name=type_name)[:8]
-        banners = Banner.objects.filter(category__type__name=type_name)
+        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:8]
+        banners = Banner.objects.filter(type__name__iexact=type_name)
     else:
         products = Product.objects.all()[:8]
         banners = Banner.objects.all()

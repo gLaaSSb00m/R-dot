@@ -178,15 +178,18 @@ header {
 
 .banner {
     position: relative;
-    width: 50%;
+    width: 100%;
+    height: 200px;
     overflow: hidden;
     border-radius: 5px;
 }
 
 .banner img {
     width: 100%;
+    height: 100%;
     display: block;
     margin: 0;
+    object-fit: cover;
 }
 
 .banner-text {
@@ -214,6 +217,14 @@ header {
     border-radius: 3px;
     cursor: pointer;
     font-weight: bold;
+}
+
+.banner .btn-shop {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
 }
 
 .product-section {
@@ -517,22 +528,18 @@ footer {
     }
 
     .banner-slider {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
+        flex-direction: column;
         gap: 10px;
     }
 
     .banner {
-        width: 48%;
-        flex-direction: column;
-        height: auto;
-        min-height: 300px;
+        width: 100%;
+        height: 300px;
     }
 
     .banner img {
         width: 100%;
-        height: auto;
+        height: 100%;
         object-fit: cover;
     }
 
@@ -1434,4 +1441,49 @@ footer {
     .gadgets-section > div, .fashion-section > div {
         padding: 15px;
     }
+}
+
+/* Banner overlay styles */
+.banner-overlay {
+    position: absolute;
+    top: 20%;
+    left: 10%;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.5); /* semi-transparent black */
+    padding: 20px 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    z-index: 20;
+}
+
+.banner-overlay h2 {
+    margin: 0 0 10px;
+    font-size: 2.5em;
+}
+
+.banner-overlay p {
+    margin: 0 0 15px;
+    font-size: 1.2em;
+}
+
+.banner-cart-form {
+    margin: 0;
+    padding: 0;
+}
+
+.banner-cart-form .btn-shop {
+    background-color: #ff6f61;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background-color 0.3s ease;
+}
+
+.banner-cart-form .btn-shop:hover {
+    background-color: #e65c50;
 }

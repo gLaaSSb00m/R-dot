@@ -17,8 +17,8 @@ class Banner(models.Model):
     title = models.CharField(max_length=100)
     subtitle = models.CharField(max_length=200)
     image = models.ImageField(upload_to='banners/')
-    link = models.URLField(blank=True, null=True)
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='banners', null=True, blank=True)
+    type = models.ForeignKey(Type, on_delete=models.CASCADE, related_name='banners', null=True, blank=True)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='banners', null=True, blank=True)
 
     def __str__(self):
         return self.title
