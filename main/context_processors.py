@@ -6,7 +6,7 @@ def cart_item_count(request):
     return {'cart_item_count': total_quantity}
 
 def categories_processor(request):
-    type_name = request.GET.get('type')
+    type_name = request.GET.get('type') or request.session.get('selected_type', 'Fashion')
     current_category = None
 
     # Check if we're on a category detail page
@@ -53,7 +53,7 @@ def categories_processor(request):
     }
 
 def subcategories_processor(request):
-    type_name = request.GET.get('type')
+    type_name = request.GET.get('type') or request.session.get('selected_type', 'Fashion')
 
     # Check if we're on a subcategory detail page
     if request.resolver_match and request.resolver_match.url_name == 'subcategory_detail':
@@ -87,6 +87,7 @@ def subcategories_processor(request):
     }
 
 def toggle_visibility_processor(request):
-    # Show toggle on home and product-related pages
-    show_toggle = request.resolver_match.url_name in ['home', 'subcategory_detail', 'category_detail', 'search']
-    return {'show_toggle': show_toggle}
+    # Show toggle on all pages
+    show_toggle = True
+    selected_type = request.session.get('selected_type', 'Fashion')
+    return {'show_toggle': show_toggle, 'selected_type': selected_type}

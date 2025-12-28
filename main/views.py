@@ -13,12 +13,14 @@ from .forms import CustomUserCreationForm, CheckoutForm
 def home(request):
     type_name = request.GET.get('type')
     if type_name:
+        request.session['selected_type'] = type_name
         products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:8]
         banners = Banner.objects.filter(type__name__iexact=type_name)
     else:
-        products = Product.objects.all()[:8]
-        banners = Banner.objects.all()
-    return render(request, 'home.html', {'banners': banners, 'products': products})
+        type_name = request.session.get('selected_type', 'Fashion')
+        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:8]
+        banners = Banner.objects.filter(type__name__iexact=type_name)
+    return render(request, 'home.html', {'banners': banners, 'products': products, 'selected_type': type_name})
 
 def welcome(request):
     return render(request, 'welcome.html')
@@ -54,9 +56,15 @@ def search(request):
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
 def about_us(request):
+    type_name = request.GET.get('type')
+    if type_name:
+        request.session['selected_type'] = type_name
     return render(request, 'about_us.html')
 
 def contact_us(request):
+    type_name = request.GET.get('type')
+    if type_name:
+        request.session['selected_type'] = type_name
     return render(request, 'contact_us.html')
 
 

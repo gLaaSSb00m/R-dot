@@ -30,9 +30,9 @@
             <div class="fashion-gadget-switch">
             <form method="get" class="filter-form">
                 <div class="toggle-switch">
-                    <input type="radio" id="fashion" name="type" value="Fashion" {% if request.GET.type == 'Fashion' or not request.GET.type and current_category and current_category.type.name == 'Fashion' %}checked{% endif %}>
+                    <input type="radio" id="fashion" name="type" value="Fashion" {% if selected_type == 'Fashion' %}checked{% endif %}>
                     <label for="fashion">Fashion</label>
-                    <input type="radio" id="gadget" name="type" value="Gadget" {% if request.GET.type == 'Gadget' or not request.GET.type and current_category and current_category.type.name == 'Gadget' %}checked{% endif %}>
+                    <input type="radio" id="gadget" name="type" value="Gadget" {% if selected_type == 'Gadget' %}checked{% endif %}>
                     <label for="gadget">Gadget</label>
                 </div>
             </form>
@@ -42,10 +42,10 @@
         <nav class="main-nav">
             <button class="menu-toggle">&#9776;</button>
             <div class="logo">
-                <a href="{% url 'home' %}">R dot</a>
+                <a href="{% url 'home' %}?type={{ selected_type }}">R dot</a>
             </div>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
+                <li><a href="{% url 'home' %}?type={{ selected_type }}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
                 {% for category in nav_categories %}
                 <li><a href="{% url 'category_detail' category.id %}" class="{% if request.resolver_match.url_name == 'category_detail' and request.resolver_match.kwargs.category_id == category.id or request.resolver_match.url_name == 'subcategory_detail' and current_category and current_category.id == category.id %}active{% endif %}">{{ category.name }}</a></li>
                 {% endfor %}
@@ -167,12 +167,7 @@
             toggle.classList.remove('gadget-selected');
             toggle.classList.add('fashion-selected');
             setTimeout(() => {
-                // If on category or subcategory page, redirect to home with type
-                if (window.location.pathname.includes('/category/') || window.location.pathname.includes('/subcategory/')) {
-                    window.location.href = '/home/?type=Fashion';
-                } else {
-                    filterForm.submit();
-                }
+                window.location.href = '/home/?type=Fashion';
             }, 300); // Delay to allow animation to complete
         });
 
@@ -180,12 +175,7 @@
             toggle.classList.remove('fashion-selected');
             toggle.classList.add('gadget-selected');
             setTimeout(() => {
-                // If on category or subcategory page, redirect to home with type
-                if (window.location.pathname.includes('/category/') || window.location.pathname.includes('/subcategory/')) {
-                    window.location.href = '/home/?type=Gadget';
-                } else {
-                    filterForm.submit();
-                }
+                window.location.href = '/home/?type=Gadget';
             }, 300); // Delay to allow animation to complete
         });
     });
