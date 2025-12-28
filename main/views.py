@@ -14,11 +14,11 @@ def home(request):
     type_name = request.GET.get('type')
     if type_name:
         request.session['selected_type'] = type_name
-        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:8]
+        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:16]
         banners = Banner.objects.filter(type__name__iexact=type_name)
     else:
         type_name = request.session.get('selected_type', 'Fashion')
-        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:8]
+        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:16]
         banners = Banner.objects.filter(type__name__iexact=type_name)
     return render(request, 'home.html', {'banners': banners, 'products': products, 'selected_type': type_name})
 
