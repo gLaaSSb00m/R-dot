@@ -13,3 +13,9 @@
 - [x] Update home.html: remove banner-text div so only image shows
 - [x] Run makemigrations and migrate for database changes
 - [x] Test banner display on fashion and gadget pages
+
+# TODO: Update Social Login Buttons
+
+- [x] Change social login buttons to be two separate small boxes with black borders - one for Facebook and one for Google, stacked vertically
+- [x] Add Google OAuth URLs and views to match Facebook implementation
+- [x] Test the signup page to ensure both buttons display correctly

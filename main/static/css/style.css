@@ -705,40 +705,29 @@ footer {
 /* Social Login Styles */
 .social-login {
     margin-bottom: 20px;
-}
-
-.facebook-btn {
-    width: 100%;
-    padding: 12px 20px;
-    background: #1877f2;
-    color: #fff;
-    border: none;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
     gap: 10px;
-    transition: background 0.3s ease;
+}
+
+.social-box {
+    border: 2px solid #000;
+    border-radius: 4px;
+    padding: 8px;
+    text-align: center;
+}
+
+.social-link {
+    color: #333;
     text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    display: block;
+    padding: 4px 0;
 }
 
-.facebook-btn:hover {
-    background: #166fe5;
-}
-
-.facebook-icon {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    font-weight: bold;
-    font-size: 20px;
-    color: #fff;
-    background: #1877f2;
-    border-radius: 2px;
-    padding: 2px 6px;
-    margin-right: 8px;
-    display: inline-block;
-    line-height: 1;
+.social-link:hover {
+    color: #b87e4a;
 }
 
 .divider {

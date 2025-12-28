@@ -223,6 +223,11 @@ FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', 'your_facebook_app_id')
 FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', 'your_facebook_app_secret')
 FACEBOOK_REDIRECT_URI = getattr(settings, 'FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
 
+# Google OAuth Configuration
+GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', 'your_google_client_id')
+GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', 'your_google_client_secret')
+GOOGLE_REDIRECT_URI = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
+
 def facebook_login(request):
     """Initiate Facebook OAuth login"""
     facebook_auth_url = (
@@ -304,6 +309,91 @@ def facebook_callback(request):
         return redirect('login')
     except json.JSONDecodeError:
         messages.error(request, 'Facebook login failed - invalid response from Facebook')
+        return redirect('login')
+
+def google_login(request):
+    """Initiate Google OAuth login"""
+    google_auth_url = (
+        f"https://accounts.google.com/o/oauth2/v2/auth?"
+        f"client_id={GOOGLE_CLIENT_ID}&"
+        f"redirect_uri={GOOGLE_REDIRECT_URI}&"
+        f"scope=openid%20email%20profile&"
+        f"response_type=code&"
+        f"access_type=offline"
+    )
+    return HttpResponseRedirect(google_auth_url)
+
+def google_callback(request):
+    """Handle Google OAuth callback"""
+    code = request.GET.get('code')
+    if not code:
+        messages.error(request, 'Google login failed - no authorization code received')
+        return redirect('login')
+
+    # Exchange code for access token
+    token_url = 'https://oauth2.googleapis.com/token'
+    token_data = {
+        'client_id': GOOGLE_CLIENT_ID,
+        'client_secret': GOOGLE_CLIENT_SECRET,
+        'code': code,
+        'grant_type': 'authorization_code',
+        'redirect_uri': GOOGLE_REDIRECT_URI,
+    }
+
+    try:
+        token_response = requests.post(token_url, data=token_data)
+        token_json = token_response.json()
+
+        if 'access_token' not in token_json:
+            messages.error(request, 'Google login failed - could not get access token')
+            return redirect('login')
+
+        access_token = token_json['access_token']
+
+        # Get user info from Google
+        user_info_url = f'https://www.googleapis.com/oauth2/v2/userinfo?access_token={access_token}'
+        user_response = requests.get(user_info_url)
+        user_data = user_response.json()
+
+        if 'email' not in user_data:
+            messages.error(request, 'Google login failed - could not get user email')
+            return redirect('login')
+
+        # Create or get user
+        email = user_data['email']
+        google_id = user_data['id']
+        name = user_data.get('name', '')
+
+        # Try to find existing user by email or create new one
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            # Create new user with Google data
+            username = f"google_{google_id}"
+            # Ensure username is unique
+            counter = 1
+            original_username = username
+            while User.objects.filter(username=username).exists():
+                username = f"{original_username}_{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                first_name=name.split(' ')[0] if ' ' in name else name,
+                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else ''
+            )
+
+        # Log the user in
+        login(request, user)
+        messages.success(request, f'Welcome {user.first_name or user.username}!')
+        return redirect('home')
+
+    except requests.RequestException as e:
+        messages.error(request, f'Google login failed - {str(e)}')
+        return redirect('login')
+    except json.JSONDecodeError:
+        messages.error(request, 'Google login failed - invalid response from Google')
         return redirect('login')
 
 def checkout(request):
