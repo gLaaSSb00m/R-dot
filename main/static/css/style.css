@@ -73,7 +73,10 @@ header {
     padding: 5px 0;
 }
 
-.nav-links li a.active,
+.nav-links li a.active {
+    color: #b87e4a !important;
+}
+
 .nav-links li a:hover {
     color: #b87e4a;
 }
@@ -116,6 +119,10 @@ header {
 .dropdown-menu li a {
     color: #333;
     font-weight: normal;
+}
+
+.dropdown-menu li a.active {
+    color: #b87e4a !important;
 }
 
 .search-cart {
@@ -1299,14 +1306,14 @@ footer {
     text-align: center;
     line-height: 40px;
     font-weight: 600;
-    color: #666;
+    color: #000;
     cursor: pointer;
     transition: color 0.3s ease;
     z-index: 2;
 }
 
 .toggle-switch input[type="radio"]:checked + label {
-    color: #fff;
+    color: #ffffff;
 }
 
 .toggle-switch::before {

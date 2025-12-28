@@ -46,15 +46,15 @@
             </div>
             <ul class="nav-links">
                 <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
-                {% for subcategory in nav_subcategories %}
-                <li><a href="{% url 'subcategory_detail' subcategory.id %}" class="{% if request.resolver_match.url_name == 'subcategory_detail' and request.resolver_match.kwargs.subcategory_id == subcategory.id|stringformat:'s' %}active{% endif %}">{{ subcategory.name }}</a></li>
+                {% for category in nav_categories %}
+                <li><a href="{% url 'category_detail' category.id %}" class="{% if request.resolver_match.url_name == 'category_detail' and request.resolver_match.kwargs.category_id == category.id or request.resolver_match.url_name == 'subcategory_detail' and current_category and current_category.id == category.id %}active{% endif %}">{{ category.name }}</a></li>
                 {% endfor %}
-                {% if all_subcategories|length > nav_subcategories|length %}
+                {% if all_categories|length > nav_categories|length %}
                 <li class="dropdown">
                     <a href="#">More</a>
                     <ul class="dropdown-menu">
-                        {% for subcategory in all_subcategories|slice:"5:" %}
-                        <li><a href="{% url 'subcategory_detail' subcategory.id %}" class="{% if request.resolver_match.url_name == 'subcategory_detail' and request.resolver_match.kwargs.subcategory_id == subcategory.id|stringformat:'s' %}active{% endif %}">{{ subcategory.name }}</a></li>
+                        {% for category in all_categories|slice:"5:" %}
+                        <li><a href="{% url 'category_detail' category.id %}" class="{% if request.resolver_match.url_name == 'category_detail' and request.resolver_match.kwargs.category_id == category.id or request.resolver_match.url_name == 'subcategory_detail' and current_category and current_category.id == category.id %}active{% endif %}">{{ category.name }}</a></li>
                         {% endfor %}
                     </ul>
                 </li>
