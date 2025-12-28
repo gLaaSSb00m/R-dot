@@ -30,9 +30,9 @@
             <div class="fashion-gadget-switch">
             <form method="get" class="filter-form">
                 <div class="toggle-switch">
-                    <input type="radio" id="fashion" name="type" value="Fashion" {% if request.GET.type == 'Fashion' %}checked{% endif %}>
+                    <input type="radio" id="fashion" name="type" value="Fashion" {% if request.GET.type == 'Fashion' or not request.GET.type and current_category and current_category.type.name == 'Fashion' %}checked{% endif %}>
                     <label for="fashion">Fashion</label>
-                    <input type="radio" id="gadget" name="type" value="Gadget" {% if request.GET.type == 'Gadget' %}checked{% endif %}>
+                    <input type="radio" id="gadget" name="type" value="Gadget" {% if request.GET.type == 'Gadget' or not request.GET.type and current_category and current_category.type.name == 'Gadget' %}checked{% endif %}>
                     <label for="gadget">Gadget</label>
                 </div>
             </form>

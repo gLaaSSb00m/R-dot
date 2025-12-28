@@ -1312,7 +1312,11 @@ footer {
     z-index: 2;
 }
 
-.toggle-switch input[type="radio"]:checked + label {
+.toggle-switch.fashion-selected label:first-of-type {
+    color: #ffffff;
+}
+
+.toggle-switch.gadget-selected label:last-of-type {
     color: #ffffff;
 }
 
