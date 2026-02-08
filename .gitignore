@@ -118,7 +118,7 @@ dmypy.json
 Thumbs.db
 
 # Media files (uncomment if you want to version control media)
-media/
+# media/
 !media/screenshots/
 
 # Static files
