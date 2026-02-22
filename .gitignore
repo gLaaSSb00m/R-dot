@@ -119,7 +119,7 @@ Thumbs.db
 
 # Media files (uncomment if you want to version control media)
 # media/
-!media/screenshots/
+# !media/screenshots/
 #
 # Static files
 staticfiles/
