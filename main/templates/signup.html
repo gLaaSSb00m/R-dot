@@ -6,10 +6,16 @@
     <div class="signup-form">
         <!-- Social Login Options -->
         <div class="social-login">
-            <a href="{% url 'facebook_login' %}" class="facebook-btn">
-                <span class="facebook-icon">f</span>
-                Continue with Facebook
-            </a>
+            <div class="social-box">
+                <a href="{% url 'facebook_login' %}" class="social-link">
+                    Continue with Facebook
+                </a>
+            </div>
+            <div class="social-box">
+                <a href="{% url 'google_login' %}" class="social-link">
+                    Continue with Google
+                </a>
+            </div>
         </div>
 
         <div class="divider">

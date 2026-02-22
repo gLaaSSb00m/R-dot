@@ -24,4 +24,7 @@ urlpatterns = [
     # Facebook OAuth URLs
     path('auth/facebook/', views.facebook_login, name='facebook_login'),
     path('auth/facebook/callback/', views.facebook_callback, name='facebook_callback'),
+    # Google OAuth URLs
+    path('auth/google/', views.google_login, name='google_login'),
+    path('auth/google/callback/', views.google_callback, name='google_callback'),
 ]
