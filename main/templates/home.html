@@ -34,8 +34,8 @@
         <div class="logo">
             <a href="{% url 'home' %}">R dot</a>
         </div>
-            <!-- Subcategory Tabs - Only show when subcategories exist and no specific subcategory is selected -->
-        {% if subcategories and not selected_subcategory %}
+        <!-- Subcategory Tabs - Show when subcategories exist (both with and without selected subcategory) -->
+        {% if subcategories %}
         {% comment %} <div class="subcategory-tabs"> {% endcomment %}
             <div class="subcategory-tabs-container">
                 <a href="{% url 'home' %}?type={{ selected_type }}" class="subcategory-tab {% if not selected_subcategory %}active{% endif %}">All</a>
@@ -46,8 +46,8 @@
         {% comment %} </div> {% endcomment %}
         {% endif %}
 
-        <!-- Show category navigation only when no subcategory tabs or when a subcategory is selected -->
-        {% if not subcategories or selected_subcategory %}
+        <!-- Show category navigation only when no subcategory tabs exist -->
+        {% if not subcategories %}
         <ul class="nav-links">
             <li><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
             {% for category in nav_categories %}
