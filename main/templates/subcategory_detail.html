@@ -14,8 +14,10 @@
 <div class="products">
     {% for product in products %}
     <div class="product-card">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" />
-        <p>{{ product.name }}</p>
+        <a href="{% url 'product_detail' product.id %}">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}" />
+        </a>
+        <p><a href="{% url 'product_detail' product.id %}">{{ product.name }}</a></p>
         <p>৳{{ product.price }}</p>
         <form method="post" action="{% url 'add_to_cart' %}" onsubmit="return addToCart(event, this);">
             {% csrf_token %}

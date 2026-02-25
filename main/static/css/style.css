@@ -1487,3 +1487,57 @@ footer {
 .banner-cart-form .btn-shop:hover {
     background-color: #e65c50;
 }
+
+/* Subcategory Tabs Styles */
+.subcategory-tabs {
+    background: #f8f8f8;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+.subcategory-tabs-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.subcategory-tab {
+    padding: 8px 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 20px;
+    color: #333;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.subcategory-tab:hover {
+    background: #b87e4a;
+    color: #fff;
+    border-color: #b87e4a;
+}
+
+.subcategory-tab.active {
+    background: #b87e4a;
+    color: #fff;
+    border-color: #b87e4a;
+}
+
+@media (max-width: 768px) {
+    .subcategory-tabs {
+        padding: 8px 10px;
+    }
+    
+    .subcategory-tabs-container {
+        gap: 8px;
+    }
+    
+    .subcategory-tab {
+        padding: 6px 15px;
+        font-size: 14px;
+    }
+}

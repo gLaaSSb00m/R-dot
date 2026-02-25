@@ -10,17 +10,36 @@ import json
 from .models import Product, Category, Banner, Subcategory, Blog, NewOrder
 from .forms import CustomUserCreationForm, CheckoutForm
 
-def home(request):
+def home(request, subcategory_name=None):
     type_name = request.GET.get('type')
+    
+    # Get subcategories for the current type (for tabs)
     if type_name:
         request.session['selected_type'] = type_name
-        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:16]
-        banners = Banner.objects.filter(type__name__iexact=type_name)
+        subcategories = Subcategory.objects.filter(category__type__name__iexact=type_name)
     else:
         type_name = request.session.get('selected_type', 'Fashion')
-        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name)[:16]
+        subcategories = Subcategory.objects.filter(category__type__name__iexact=type_name)
+    
+    # Handle subcategory filtering
+    selected_subcategory = None
+    if subcategory_name:
+        # Filter by specific subcategory
+        selected_subcategory = subcategory_name
+        products = Product.objects.filter(subcategory__name__iexact=subcategory_name).order_by('?')[:16]
         banners = Banner.objects.filter(type__name__iexact=type_name)
-    return render(request, 'home.html', {'banners': banners, 'products': products, 'selected_type': type_name})
+    else:
+        # Filter by type (all products in that type)
+        products = Product.objects.filter(subcategory__category__type__name__iexact=type_name).order_by('?')[:16]
+        banners = Banner.objects.filter(type__name__iexact=type_name)
+    
+    return render(request, 'home.html', {
+        'banners': banners, 
+        'products': products, 
+        'selected_type': type_name,
+        'subcategories': subcategories,
+        'selected_subcategory': selected_subcategory
+    })
 
 def welcome(request):
     return render(request, 'welcome.html')
@@ -45,6 +64,14 @@ def subcategory_detail(request, subcategory_id):
         subcategories = Subcategory.objects.filter(category=subcategory.category)
     products = subcategory.products.all()
     return render(request, 'subcategory_detail.html', {'subcategory': subcategory, 'products': products, 'subcategories': subcategories})
+
+def product_detail(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    related_products = Product.objects.filter(subcategory=product.subcategory).exclude(id=product_id)[:4]
+    return render(request, 'product_detail.html', {
+        'product': product,
+        'related_products': related_products
+    })
 
 def search(request):
     query = request.GET.get('q', '')
