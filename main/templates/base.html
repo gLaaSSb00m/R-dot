@@ -44,8 +44,18 @@
             <div class="logo">
                 <a href="{% url 'home' %}?type={{ selected_type }}">R dot</a>
             </div>
+            {% if nav_subcategories %}
+            <div class="subcategory-tabs-container">
+                <a href="{% url 'home' %}?type={{ selected_type }}" class="subcategory-tab {% if request.resolver_match.url_name == 'home' %}active{% endif %}">All</a>
+                {% for subcategory in nav_subcategories %}
+                <a href="{% url 'home_subcategory' subcategory_name=subcategory.name %}?type={{ selected_type }}" class="subcategory-tab {% if request.resolver_match.url_name == 'home_subcategory' and request.resolver_match.kwargs.subcategory_name == subcategory.name %}active{% endif %}">{{ subcategory.name }}</a>
+                {% endfor %}
+            </div>
+            <!-- Placeholder to maintain layout when nav is hidden -->
+            <ul class="nav-links"></ul>
+            {% else %}
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}?type={{ selected_type }}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">HOME</a></li>
+                <li><a href="{% url 'home' %}?type={{ selected_type }}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">All</a></li>
                 {% for category in nav_categories %}
                 <li><a href="{% url 'category_detail' category.id %}" class="{% if request.resolver_match.url_name == 'category_detail' and request.resolver_match.kwargs.category_id == category.id or request.resolver_match.url_name == 'subcategory_detail' and current_category and current_category.id == category.id %}active{% endif %}">{{ category.name }}</a></li>
                 {% endfor %}
@@ -60,6 +70,7 @@
                 </li>
                 {% endif %}
             </ul>
+            {% endif %}
             <div class="search-cart">
                 <form action="{% url 'search' %}" method="get">
                     <input type="text" name="q" placeholder="Search product ..." />
