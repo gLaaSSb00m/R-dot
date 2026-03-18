@@ -15,7 +15,7 @@ class CustomUserCreationForm(UserCreationForm):
             raise forms.ValidationError("A user with this email already exists.")
         return email
 
-    def save(self, commit=True):
+    def save(self, commit: bool = True) -> User:
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
         if commit:

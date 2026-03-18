@@ -1,50 +1,52 @@
+from typing import Dict, Any
+from django.http import HttpRequest
 from .models import Category, Subcategory
 
-def cart_item_count(request):
+
+def cart_item_count(request: HttpRequest) -> Dict[str, Any]:
     cart = request.session.get('cart', {})
     total_quantity = sum(cart.values()) if cart else 0
     return {'cart_item_count': total_quantity}
 
-def categories_processor(request):
+
+def categories_processor(request: HttpRequest) -> Dict[str, Any]:
     type_name = request.GET.get('type') or request.session.get('selected_type', 'Fashion')
     current_category = None
 
-    # Check if we're on a category detail page
-    if request.resolver_match and request.resolver_match.url_name == 'category_detail':
-        category_id = request.resolver_match.kwargs.get('category_id')
+    resolver = request.resolver_match
+
+    # Category detail page
+    if resolver and resolver.url_name == 'category_detail':
+        category_id = resolver.kwargs.get('category_id')
         if category_id:
             try:
                 current_category = Category.objects.get(id=category_id)
             except Category.DoesNotExist:
-                pass
+                current_category = None
 
-    # Check if we're on a subcategory detail page
-    elif request.resolver_match and request.resolver_match.url_name == 'subcategory_detail':
-        subcategory_id = request.resolver_match.kwargs.get('subcategory_id')
+    # Subcategory detail page
+    elif resolver and resolver.url_name == 'subcategory_detail':
+        subcategory_id = resolver.kwargs.get('subcategory_id')
         if subcategory_id:
             try:
                 current_subcategory = Subcategory.objects.get(id=subcategory_id)
                 current_category = current_subcategory.category
             except Subcategory.DoesNotExist:
-                pass
+                current_category = None
 
+    # Get categories
+    if type_name:
+        all_categories = Category.objects.filter(type__name__iexact=type_name)
+    else:
+        all_categories = Category.objects.all()
+
+    # Navigation categories
     if current_category:
-        # Show categories from the same type as the current category, or all if no type
-        if type_name:
-            all_categories = Category.objects.filter(type__name__iexact=type_name)
-        else:
-            all_categories = Category.objects.all()
-        # Always include the current category in nav_categories
         nav_categories = [current_category]
-        # Add other categories, excluding the current one
-        other_categories = all_categories.exclude(id=current_category.id)[:4]
+        other_categories = all_categories.exclude(pk=current_category.pk)[:4]
         nav_categories.extend(other_categories)
     else:
-        if type_name:
-            all_categories = Category.objects.filter(type__name__iexact=type_name)
-        else:
-            all_categories = Category.objects.all()
-        nav_categories = all_categories[:5]
+        nav_categories = list(all_categories[:5])
 
     return {
         'nav_categories': nav_categories,
@@ -52,42 +54,58 @@ def categories_processor(request):
         'current_category': current_category
     }
 
-def subcategories_processor(request):
+
+def subcategories_processor(request: HttpRequest) -> Dict[str, Any]:
     type_name = request.GET.get('type') or request.session.get('selected_type', 'Fashion')
 
-    # Check if we're on a subcategory detail page
-    if request.resolver_match and request.resolver_match.url_name == 'subcategory_detail':
-        subcategory_id = request.resolver_match.kwargs.get('subcategory_id')
+    resolver = request.resolver_match
+
+    if resolver and resolver.url_name == 'subcategory_detail':
+        subcategory_id = resolver.kwargs.get('subcategory_id')
+
         if subcategory_id:
             try:
                 current_subcategory = Subcategory.objects.get(id=subcategory_id)
-                # Show subcategories from the same category as the current subcategory
-                all_subcategories = Subcategory.objects.filter(category=current_subcategory.category)
-                # Always include the current subcategory in nav_subcategories
+
+                all_subcategories = Subcategory.objects.filter(
+                    category=current_subcategory.category
+                )
+
                 nav_subcategories = [current_subcategory]
-                # Add other subcategories from the same category, excluding the current one
-                other_subcategories = all_subcategories.exclude(id=current_subcategory.id)[:4]
+                other_subcategories = all_subcategories.exclude(
+                    pk=current_subcategory.pk
+                )[:4]
+
                 nav_subcategories.extend(other_subcategories)
+
             except Subcategory.DoesNotExist:
                 all_subcategories = Subcategory.objects.all()
-                nav_subcategories = all_subcategories[:5]
+                nav_subcategories = list(all_subcategories[:5])
         else:
             all_subcategories = Subcategory.objects.all()
-            nav_subcategories = all_subcategories[:5]
+            nav_subcategories = list(all_subcategories[:5])
+
     elif type_name:
-        all_subcategories = Subcategory.objects.filter(category__type__name=type_name)
-        nav_subcategories = all_subcategories[:5]
+        all_subcategories = Subcategory.objects.filter(
+            category__type__name=type_name
+        )
+        nav_subcategories = list(all_subcategories[:5])
+
     else:
         all_subcategories = Subcategory.objects.all()
-        nav_subcategories = all_subcategories[:5]
+        nav_subcategories = list(all_subcategories[:5])
 
     return {
         'nav_subcategories': nav_subcategories,
         'all_subcategories': all_subcategories
     }
 
-def toggle_visibility_processor(request):
-    # Show toggle on all pages
+
+def toggle_visibility_processor(request: HttpRequest) -> Dict[str, Any]:
     show_toggle = True
     selected_type = request.session.get('selected_type', 'Fashion')
-    return {'show_toggle': show_toggle, 'selected_type': selected_type}
+
+    return {
+        'show_toggle': show_toggle,
+        'selected_type': selected_type
+    }
