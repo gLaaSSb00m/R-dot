@@ -1170,7 +1170,7 @@ footer {
 
 .gadgets-section {
     width: 50%;
-    background-image: url('/static/images/still-life-wireless-cyberpunk-headphones_low.jpg');
+    background-image: url('/static/images/O9HD520_low.jpg');
     background-size: cover;
     background-position: center;
     color: white;
@@ -1385,30 +1385,7 @@ footer {
     background-color: rgba(0, 0, 0, 0.7);
 }
 
-@media (max-width: 768px) {
-    .welcome-container {
-        flex-direction: column;
-    }
-
-    .gadgets-section, .fashion-section {
-        width: 100%;
-        min-height: 50vh;
-        background-image: url('/static/images/still-life-wireless-cyberpunk-headphones_mobile.jpg');
-    }
-
-    .fashion-section {
-        background-image: url('/static/images/O9HD520_mobile.jpg');
-    }
-
-    .gadgets-section h2, .fashion-section h2 {
-        font-size: 1.5rem;
-    }
-
-    .tab-btn {
-        padding: 10px 20px;
-        font-size: 0.9rem;
-    }
-}
+@media (max-width: 768px) {\n    .welcome-container {\n        flex-direction: column;\n    }\n\n    .gadgets-section, .fashion-section {\n        width: 100%;\n        min-height: 50vh;\n        background-image: url('/static/images/O9HD520_mobile.jpg');\n    }\n\n    .fashion-section {\n        background-image: url('/static/images/O9HD520_mobile.jpg');\n    }\n\n    .gadgets-section h2, .fashion-section h2 {\n        font-size: 1.5rem;\n    }\n\n    .tab-btn {\n        padding: 10px 20px;\n        font-size: 0.9rem;\n    }\n}
 
 @media (max-width: 480px) {
     .toggle-switch {

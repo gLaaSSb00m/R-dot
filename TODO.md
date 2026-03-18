@@ -1,1 +1,1 @@
-TODO complete - Navbar unified with home style (subcategory tabs if nav_subcategories, else All + categories) across all pages.
+# Task: Make Gadget section navbar style match Fashion section\n\n## Steps:\n1. [ ] Create TODO.md (current)\n2. [ ] Edit main/static/css/style.css to update .gadgets-section backgrounds to match .fashion-section\n3. [ ] Verify and complete\n
