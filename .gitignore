@@ -127,4 +127,4 @@ staticfiles/
 # Secrets
 secrets.json
 .continue/
-.qodo/
+\n.qodo/\n\n# Google Cloud / Service Account secrets\n*.json\n!render.yaml\n!requirements.txt\n*.gserviceaccount.json\n*.pem
