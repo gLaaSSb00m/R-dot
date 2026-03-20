@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 import dj_database_url
+from typing import Any
 
 # Load environment variables from .env file
 load_dotenv()
@@ -59,7 +60,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'R_dot.urls'
 
-TEMPLATES = [
+TEMPLATES: list[dict[str, Any]] = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -73,6 +74,7 @@ TEMPLATES = [
                 'main.context_processors.subcategories_processor',
                 'main.context_processors.cart_item_count',
                 'main.context_processors.toggle_visibility_processor',
+                'main.context_processors.auth_context',
             ],
         },
     },
@@ -84,8 +86,8 @@ WSGI_APPLICATION = 'R_dot.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': dj_database_url.config(
+DATABASES: dict[str, Any] = {
+    'default': dj_database_url.config(  # type: ignore
         default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600,
         conn_health_checks=True,

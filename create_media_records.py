@@ -46,7 +46,8 @@ if Banner.objects.count() == 0:
     print(f"Created Banner: {banner.title} with image {banner.image}")
 else:
     banner = Banner.objects.first()
-    print(f"Existing Banner: {banner.title} with image {banner.image}")
+    if banner:
+        print(f"Existing Banner: {banner.title} with image {banner.image}")
 
 # Create a Product if none exists
 if Product.objects.count() == 0:
@@ -61,6 +62,7 @@ if Product.objects.count() == 0:
     print(f"Created Product: {product.name} with image {product.image}")
 else:
     product = Product.objects.first()
-    print(f"Existing Product: {product.name} with image {product.image}")
+    if product:
+        print(f"Existing Product: {product.name} with image {product.image}")
 
 print("\nDone! Media files are now linked to database records.")

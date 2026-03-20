@@ -109,3 +109,19 @@ def toggle_visibility_processor(request: HttpRequest) -> Dict[str, Any]:
         'show_toggle': show_toggle,
         'selected_type': selected_type
     }
+
+
+def auth_context(request: HttpRequest) -> Dict[str, Any]:
+    """Provide user and admin_user from session for templates"""
+    from .views import get_session_user, get_session_admin_user
+
+    # When rendering admin pages, Django's own auth system is in use.
+    # We must not override the 'user' object in the context, as it would
+    # break admin templates that expect the standard user object.
+    if request.resolver_match and request.resolver_match.app_name == 'admin':
+        return {'admin_user': get_session_admin_user(request)}
+
+    return {
+        'user': get_session_user(request),
+        'admin_user': get_session_admin_user(request)
+    }

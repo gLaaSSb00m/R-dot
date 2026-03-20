@@ -1,0 +1,69 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="dark-theme">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}R dot Admin{% endblock %}</title>
+    <style>
+        :root {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0b0;
+            --accent: #007bff;
+            --accent-hover: #0056b3;
+            --border: #404040;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: var(--bg-primary); 
+            color: var(--text-primary); 
+            line-height: 1.6;
+        }
+        .admin-header { 
+            background: var(--bg-secondary); 
+            padding: 1rem 2rem; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        .logo { font-size: 1.5rem; font-weight: bold; color: var(--accent); }
+        .user-info { display: flex; gap: 1rem; align-items: center; }
+        .admin-nav a { color: var(--text-secondary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 4px; transition: all 0.3s; }
+        .admin-nav a:hover { background: var(--accent); color: white; }
+        main { padding: 2rem; min-height: calc(100vh - 80px); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border-left: 4px solid var(--accent); }
+        .stat-number { font-size: 2.5rem; font-weight: bold; color: var(--accent); }
+        .stat-label { color: var(--text-secondary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; }
+        table { width: 100%; border-collapse: collapse; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid var(--border); }
+        th { background: var(--accent); color: white; }
+        tr:hover { background: #3d3d3d; }
+        .btn { background: var(--accent); color: white; padding: 0.5rem 1rem; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; transition: background 0.3s; }
+        .btn:hover { background: var(--accent-hover); }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <div class="logo">R dot Admin Panel</div>
+        <div class="user-info">
+            <span>Welcome, {{ user.username }} (Admin)</span>
+            <a href="{% url 'admin:index' %}" class="btn">Django Admin</a>
+            <a href="{% url 'home' %}" class="btn">User Site</a>
+            <a href="{% url 'logout_admin' %}" class="btn">Logout (Admin)</a>
+        </div>
+    </header>
+    <main>
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 1rem; margin-bottom: 1rem; background: #4caf50; color: white; border-radius: 4px;">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

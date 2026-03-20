@@ -15,7 +15,8 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('admin-login/', views.admin_login_view, name='admin_login'),
     path('signup/', views.signup, name='signup'),
-    path('logout/', views.logout_view, name='logout'),
+    path('logout-user/', views.logout_user, name='logout_user'),
+    path('logout-admin/', views.logout_admin, name='logout_admin'),
     path('profile/', views.profile, name='profile'),
     path('cart/', views.cart, name='cart'),
     path('checkout/', views.checkout, name='checkout'),
@@ -29,4 +30,5 @@ urlpatterns = [
     # Google OAuth URLs
     path('auth/google/', views.google_login, name='google_login'),
     path('auth/google/callback/', views.google_callback, name='google_callback'),
+    path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
 ]

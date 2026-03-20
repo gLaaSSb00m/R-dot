@@ -1,16 +1,88 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import authenticate
 from django.contrib import messages
 from django.db.models import Q
 from django.conf import settings
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpRequest, JsonResponse
 from django.contrib.auth.models import User
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 import requests
 import json
-from .models import Product, Category, Banner, Subcategory, Blog, NewOrder
+from functools import wraps
+from typing import Optional, Any, Callable
+from .models import Product, Category, Banner, Subcategory, NewOrder
 from .forms import CustomUserCreationForm, CheckoutForm
 
-def home(request, subcategory_name=None):
+
+def get_session_user(request: HttpRequest) -> Optional[User]:
+    """Get authenticated user from user session data"""
+    user_id = request.session.get('user_auth_id')  # type: ignore
+    session_hash = request.session.get('user_auth_hash')  # type: ignore
+    if user_id and session_hash:
+        try:
+            user = User.objects.get(pk=user_id)
+            expected_hash = user.get_session_auth_hash()
+            if expected_hash == session_hash:
+                return user
+        except User.DoesNotExist:
+            pass
+    return None
+
+
+def get_session_admin_user(request: HttpRequest) -> Optional[User]:
+    """Get authenticated admin user from admin session data"""
+    admin_id = request.session.get('admin_auth_id')  # type: ignore
+    session_hash = request.session.get('admin_auth_hash')  # type: ignore
+    if admin_id and session_hash:
+        try:
+            user = User.objects.get(pk=admin_id)
+            expected_hash = user.get_session_auth_hash()
+            if expected_hash == session_hash:
+                user.is_staff = True  # Ensure admin context
+                return user
+        except User.DoesNotExist:
+            pass
+    return None
+
+
+def clear_user_session(request: HttpRequest) -> None:
+    """Clear user session data"""
+    request.session.pop('user_auth_id', None)  # type: ignore
+    request.session.pop('user_auth_hash', None)  # type: ignore
+
+
+def clear_admin_session(request: HttpRequest) -> None:
+    """Clear admin session data"""
+    request.session.pop('admin_auth_id', None)  # type: ignore
+    request.session.pop('admin_auth_hash', None)  # type: ignore
+
+
+
+def user_required(view_func: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        user = get_session_user(request)
+        if not user:
+            return redirect('login')
+        if user.is_staff:
+            messages.info(request, 'Admin users please use admin login.')
+            return redirect('admin_login')
+        request.user = user
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def admin_required(view_func: Callable[..., Any]) -> Callable[..., Any]:
+    @wraps(view_func)
+    def wrapper(request: HttpRequest, *args: Any, **kwargs: Any) -> Any:
+        admin_user = get_session_admin_user(request)
+        if not admin_user:
+            return redirect('admin_login')
+        request.user = admin_user
+        return view_func(request, *args, **kwargs)
+    return wrapper
+
+def home(request: HttpRequest, subcategory_name: Optional[str] = None):
     type_name = request.GET.get('type')
     
     # Get subcategories for the current type (for tabs)
@@ -41,31 +113,25 @@ def home(request, subcategory_name=None):
         'selected_subcategory': selected_subcategory
     })
 
-def welcome(request):
+def welcome(request: HttpRequest):
     return render(request, 'welcome.html')
 
-def category_detail(request, category_id):
+def category_detail(request: HttpRequest, category_id: int):
     category = get_object_or_404(Category, id=category_id)
-    subcategories = category.subcategories.all().prefetch_related('products')
-    subcategories_with_products = []
+    subcategories = Subcategory.objects.filter(category=category).prefetch_related('products')
+    subcategories_with_products: list[dict[str, Any]] = []
     for subcategory in subcategories:
-        products = subcategory.products.all()
+        products = Product.objects.filter(subcategory=subcategory)
         subcategories_with_products.append({'subcategory': subcategory, 'products': products})
     return render(request, 'category_detail.html', {'category': category, 'subcategories_with_products': subcategories_with_products})
 
-def subcategory_detail(request, subcategory_id):
+def subcategory_detail(request: HttpRequest, subcategory_id: int):
     subcategory = get_object_or_404(Subcategory, id=subcategory_id)
-    category_name = subcategory.category.name.lower()
-    if category_name == 'fashion':
-        subcategories = Subcategory.objects.filter(category__name__iexact='fashion')
-    elif category_name == 'gadget':
-        subcategories = Subcategory.objects.filter(category__name__iexact='gadget')
-    else:
-        subcategories = Subcategory.objects.filter(category=subcategory.category)
-    products = subcategory.products.all()
+    subcategories = Subcategory.objects.filter(category=subcategory.category)
+    products = Product.objects.filter(subcategory=subcategory)
     return render(request, 'subcategory_detail.html', {'subcategory': subcategory, 'products': products, 'subcategories': subcategories})
 
-def product_detail(request, product_id):
+def product_detail(request: HttpRequest, product_id: int):
     product = get_object_or_404(Product, id=product_id)
     related_products = Product.objects.filter(subcategory=product.subcategory).exclude(id=product_id)[:4]
     return render(request, 'product_detail.html', {
@@ -73,8 +139,8 @@ def product_detail(request, product_id):
         'related_products': related_products
     })
 
-def search(request):
-    query = request.GET.get('q', '')
+def search(request: HttpRequest):
+    query = request.GET.get('q', '') or ''
     products = []
     if query:
         products = Product.objects.filter(
@@ -82,13 +148,13 @@ def search(request):
         )
     return render(request, 'search_results.html', {'products': products, 'query': query})
 
-def about_us(request):
+def about_us(request: HttpRequest):
     type_name = request.GET.get('type')
     if type_name:
         request.session['selected_type'] = type_name
     return render(request, 'about_us.html')
 
-def contact_us(request):
+def contact_us(request: HttpRequest):
     type_name = request.GET.get('type')
     if type_name:
         request.session['selected_type'] = type_name
@@ -96,34 +162,35 @@ def contact_us(request):
 
 
 
-def login_view(request):
+def login_view(request: HttpRequest):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            if user.is_staff:
-                messages.error(request, 'Admin users must login via the admin login page')
-                return redirect('login')
-            login(request, user)
+        if user and not user.is_staff:
+            request.session['user_auth_id'] = user.pk
+            request.session['user_auth_hash'] = user.get_session_auth_hash()
+            request.session.modified = True
             return redirect('home')
         else:
             messages.error(request, 'Invalid username or password')
     return render(request, 'login.html')
 
-def admin_login_view(request):
+def admin_login_view(request: HttpRequest):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None and user.is_staff:
-            login(request, user)
+        if user and user.is_staff:
+            request.session['admin_auth_id'] = user.pk
+            request.session['admin_auth_hash'] = user.get_session_auth_hash()
+            request.session.modified = True
             return redirect('admin:index')
         else:
             messages.error(request, 'Invalid admin credentials or not an admin user')
     return render(request, 'admin_login.html')
 
-def signup(request):
+def signup(request: HttpRequest):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
@@ -136,35 +203,36 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
-def logout_view(request):
-    logout(request)
-    return redirect('home')
+def logout_admin(request: HttpRequest):
+    clear_admin_session(request)
+    messages.success(request, 'Admin logged out successfully.')
+    return redirect('welcome')
 
-def profile(request):
-    if not request.user.is_authenticated:
-        return redirect('login')
-
+@user_required
+def profile(request: HttpRequest):
     # Get user's orders
     orders = NewOrder.objects.filter(user=request.user).order_by('-created_at')
 
     return render(request, 'profile.html', {'orders': orders})
 
-def cart(request):
+@user_required
+def cart(request: HttpRequest):
     # For now, we'll use session-based cart
     cart_items = request.session.get('cart', {})
-    cart_data = []
+    cart_data: list[dict[str, Any]] = []
     total_items = 0
     total_price = 0
 
     for product_id, quantity in cart_items.items():
         try:
             product = Product.objects.get(id=product_id)
-            item_total = product.price * quantity
+            price = product.discount_price if product.discount_price else product.price
+            item_total = price * quantity
             cart_data.append({
-                'id': product_id,
+                'id': str(product_id),
                 'product': product,
-                'quantity': quantity,
-                'total': item_total
+                'quantity': int(quantity),
+                'total': float(item_total)
             })
             total_items += quantity
             total_price += item_total
@@ -177,12 +245,8 @@ def cart(request):
         'total_price': total_price
     })
 
-from django.views.decorators.http import require_POST
-from django.urls import reverse
-from django.http import HttpResponseRedirect
-
 @require_POST
-def add_to_cart(request):
+def add_to_cart(request: HttpRequest):
     product_id = request.POST.get('product_id')
     if not product_id:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -208,9 +272,7 @@ def add_to_cart(request):
         # If no referrer, redirect to current path
         return HttpResponseRedirect(request.path)
 
-from django.http import JsonResponse
-
-def update_quantity(request):
+def update_quantity(request: HttpRequest):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         quantity = int(request.POST.get('quantity', 1))
@@ -227,7 +289,7 @@ def update_quantity(request):
             return JsonResponse({'success': False, 'error': 'Product not in cart'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-def remove_item(request):
+def remove_item(request: HttpRequest):
     if request.method == 'POST':
         product_id = request.POST.get('product_id')
         cart = request.session.get('cart', {})
@@ -240,7 +302,7 @@ def remove_item(request):
             return JsonResponse({'success': False, 'error': 'Product not in cart'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-def cart_count(request):
+def cart_count(request: HttpRequest):
     cart = request.session.get('cart', {})
     total_quantity = sum(cart.values()) if cart else 0
     return JsonResponse({'count': total_quantity})
@@ -255,7 +317,7 @@ GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', 'your_google_client_id'
 GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', 'your_google_client_secret')
 GOOGLE_REDIRECT_URI = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
 
-def facebook_login(request):
+def facebook_login(_: HttpRequest) -> HttpResponseRedirect:
     """Initiate Facebook OAuth login"""
     facebook_auth_url = (
         f"https://www.facebook.com/v18.0/dialog/oauth?"
@@ -266,7 +328,7 @@ def facebook_login(request):
     )
     return HttpResponseRedirect(facebook_auth_url)
 
-def facebook_callback(request):
+def facebook_callback(request: HttpRequest):
     """Handle Facebook OAuth callback"""
     code = request.GET.get('code')
     if not code:
@@ -275,7 +337,7 @@ def facebook_callback(request):
 
     # Exchange code for access token
     token_url = 'https://graph.facebook.com/v18.0/oauth/access_token'
-    token_data = {
+    token_data: dict[str, str] = {
         'client_id': FACEBOOK_APP_ID,
         'client_secret': FACEBOOK_APP_SECRET,
         'redirect_uri': FACEBOOK_REDIRECT_URI,
@@ -307,27 +369,27 @@ def facebook_callback(request):
         name = user_data['name']
 
         # Try to find existing user by email or create new one
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            # Create new user with Facebook data
+        user = User.objects.filter(email=email).first()
+        if not user:
             username = f"fb_{facebook_id}"
-            # Ensure username is unique
-            counter = 1
             original_username = username
+            counter = 1
             while User.objects.filter(username=username).exists():
                 username = f"{original_username}_{counter}"
                 counter += 1
 
-            user = User.objects.create_user(
+            user = User.objects.create(
                 username=username,
                 email=email,
                 first_name=name.split(' ')[0] if ' ' in name else name,
-                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else ''
+                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
             )
+            user.set_unusable_password()
+            user.save()
 
-        # Log the user in
-        login(request, user)
+        request.session['user_auth_id'] = user.pk
+        request.session['user_auth_hash'] = user.get_session_auth_hash()
+        request.session.modified = True
         messages.success(request, f'Welcome {user.first_name or user.username}!')
         return redirect('home')
 
@@ -338,7 +400,7 @@ def facebook_callback(request):
         messages.error(request, 'Facebook login failed - invalid response from Facebook')
         return redirect('login')
 
-def google_login(request):
+def google_login(_: HttpRequest) -> HttpResponseRedirect:
     """Initiate Google OAuth login"""
     google_auth_url = (
         f"https://accounts.google.com/o/oauth2/v2/auth?"
@@ -350,7 +412,35 @@ def google_login(request):
     )
     return HttpResponseRedirect(google_auth_url)
 
-def google_callback(request):
+
+def logout_user(request: HttpRequest):
+    clear_user_session(request)
+    messages.success(request, 'User logged out successfully.')
+    return redirect('home')
+
+
+@admin_required
+def admin_dashboard(request: HttpRequest):
+    # Stats
+    total_users = User.objects.count()
+    total_products = Product.objects.count()
+    total_orders = NewOrder.objects.count()
+    total_revenue = sum([order.quantity * 1000 for order in NewOrder.objects.all()[:100]])  # Approximate revenue
+
+    # Recent orders
+    recent_orders = NewOrder.objects.select_related('user').order_by('-created_at')[:10]
+
+    context: dict[str, Any] = {
+        'total_users': total_users,
+        'total_products': total_products,
+        'total_orders': total_orders,
+        'total_revenue': total_revenue,
+        'recent_orders': recent_orders,
+    }
+
+    return render(request, 'admin/admin_dashboard.html', context)
+
+def google_callback(request: HttpRequest):
     """Handle Google OAuth callback"""
     code = request.GET.get('code')
     if not code:
@@ -359,7 +449,7 @@ def google_callback(request):
 
     # Exchange code for access token
     token_url = 'https://oauth2.googleapis.com/token'
-    token_data = {
+    token_data: dict[str, str] = {
         'client_id': GOOGLE_CLIENT_ID,
         'client_secret': GOOGLE_CLIENT_SECRET,
         'code': code,
@@ -392,27 +482,27 @@ def google_callback(request):
         name = user_data.get('name', '')
 
         # Try to find existing user by email or create new one
-        try:
-            user = User.objects.get(email=email)
-        except User.DoesNotExist:
-            # Create new user with Google data
+        user = User.objects.filter(email=email).first()
+        if not user:
             username = f"google_{google_id}"
-            # Ensure username is unique
-            counter = 1
             original_username = username
+            counter = 1
             while User.objects.filter(username=username).exists():
                 username = f"{original_username}_{counter}"
                 counter += 1
 
-            user = User.objects.create_user(
+            user = User.objects.create(
                 username=username,
                 email=email,
                 first_name=name.split(' ')[0] if ' ' in name else name,
-                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else ''
+                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
             )
+            user.set_unusable_password()
+            user.save()
 
-        # Log the user in
-        login(request, user)
+        request.session['user_auth_id'] = user.pk
+        request.session['user_auth_hash'] = user.get_session_auth_hash()
+        request.session.modified = True
         messages.success(request, f'Welcome {user.first_name or user.username}!')
         return redirect('home')
 
@@ -423,21 +513,23 @@ def google_callback(request):
         messages.error(request, 'Google login failed - invalid response from Google')
         return redirect('login')
 
-def checkout(request):
+@user_required
+def checkout(request: HttpRequest):
     cart_items = request.session.get('cart', {})
     if not cart_items:
         messages.error(request, 'Your cart is empty')
         return redirect('cart')
 
-    cart_data = []
-    total_price = 0
+    cart_data: list[dict[str, Any]] = []
+    total_price: float = 0
     for product_id, quantity in cart_items.items():
         try:
             product = Product.objects.get(id=product_id)
-            item_total = product.price * quantity
+            price = product.discount_price if product.discount_price else product.price
+            item_total = float(price * quantity)
             cart_data.append({
                 'product': product,
-                'quantity': quantity,
+                'quantity': int(quantity),
                 'total': item_total
             })
             total_price += item_total
@@ -460,13 +552,14 @@ def checkout(request):
 
             # Create NewOrder entries for each cart item
             for item in cart_data:
+                product: Product = item['product']
                 NewOrder.objects.create(
-                    user=request.user if request.user.is_authenticated else None,
+                    user=request.user,
                     address=address,
                     mobile_number=mobile_number,
-                    product_code=str(item['product'].id),  # Using product ID as code
-                    product_name=item['product'].name,
-                    product_image=item['product'].image,
+                    product_code=str(product.pk),  # Using product ID as code
+                    product_name=product.name,
+                    product_image=product.image,
                     quantity=item['quantity']
                 )
 
