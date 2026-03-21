@@ -15,6 +15,9 @@
                 {% endif %}
                 <div class="item-details">
                     <h3>{{ item.product.name }}</h3>
+                    {% if item.size %}
+                    <p class="size-info">Size: {{ item.size }}</p>
+                    {% endif %}
                     <p>Quantity: {{ item.quantity }}</p>
                     <p>Price: ৳{{ item.total }}</p>
                 </div>

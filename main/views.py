@@ -8,11 +8,11 @@ from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
 from django.urls import reverse
 import requests
-import json
 from functools import wraps
 from typing import Optional, Any, Callable
 from .models import Product, Category, Banner, Subcategory, NewOrder
 from .forms import CustomUserCreationForm, CheckoutForm
+from .backends import save_order_to_sheets
 
 
 def get_session_user(request: HttpRequest) -> Optional[User]:
@@ -223,20 +223,23 @@ def cart(request: HttpRequest):
     total_items = 0
     total_price = 0
 
-    for product_id, quantity in cart_items.items():
+    for product_id_str, item_data in cart_items.items():
         try:
+            product_id = int(product_id_str)
             product = Product.objects.get(id=product_id)
+            quantity = item_data['quantity']
             price = product.discount_price if product.discount_price else product.price
             item_total = price * quantity
             cart_data.append({
-                'id': str(product_id),
+                'id': product_id_str,
                 'product': product,
-                'quantity': int(quantity),
+                'quantity': quantity,
+                'size': item_data.get('size'),
                 'total': float(item_total)
             })
             total_items += quantity
             total_price += item_total
-        except Product.DoesNotExist:
+        except (Product.DoesNotExist, KeyError):
             pass
 
     return render(request, 'cart.html', {
@@ -253,12 +256,13 @@ def add_to_cart(request: HttpRequest):
             return JsonResponse({'success': False, 'error': 'Product ID is required'})
         return HttpResponseRedirect(reverse('home'))
 
+    product = get_object_or_404(Product, id=product_id)
+    qty = int(request.POST.get('quantity', 1))
+    size = request.POST.get('size') if product.is_fashion else ''
     cart = request.session.get('cart', {})
-    if product_id in cart:
-        cart[product_id] += 1
-    else:
-        cart[product_id] = 1
+    cart[str(product_id)] = {'quantity': qty, 'size': size}
     request.session['cart'] = cart
+    request.session.modified = True
 
     # Check if request is AJAX
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -279,11 +283,9 @@ def update_quantity(request: HttpRequest):
         cart = request.session.get('cart', {})
 
         if product_id in cart:
-            if quantity > 0:
-                cart[product_id] = quantity
-            else:
-                cart.pop(product_id)
+            cart[product_id]['quantity'] = quantity
             request.session['cart'] = cart
+            request.session.modified = True
             return JsonResponse({'success': True})
         else:
             return JsonResponse({'success': False, 'error': 'Product not in cart'})
@@ -304,7 +306,7 @@ def remove_item(request: HttpRequest):
 
 def cart_count(request: HttpRequest):
     cart = request.session.get('cart', {})
-    total_quantity = sum(cart.values()) if cart else 0
+    total_quantity = sum(item['quantity'] for item in cart.values()) if cart else 0
     return JsonResponse({'count': total_quantity})
 
 # Facebook OAuth Configuration
@@ -313,8 +315,8 @@ FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', 'your_facebook_ap
 FACEBOOK_REDIRECT_URI = getattr(settings, 'FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
 
 # Google OAuth Configuration
-GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', 'your_google_client_id')
-GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', 'your_google_client_secret')
+GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', 'Orders')
+GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', '3db1cd8534ea96c2b88a8c5f4d7cb589ce5959db')
 GOOGLE_REDIRECT_URI = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
 
 def facebook_login(_: HttpRequest) -> HttpResponseRedirect:
@@ -395,9 +397,6 @@ def facebook_callback(request: HttpRequest):
 
     except requests.RequestException as e:
         messages.error(request, f'Facebook login failed - {str(e)}')
-        return redirect('login')
-    except json.JSONDecodeError:
-        messages.error(request, 'Facebook login failed - invalid response from Facebook')
         return redirect('login')
 
 def google_login(_: HttpRequest) -> HttpResponseRedirect:
@@ -495,7 +494,7 @@ def google_callback(request: HttpRequest):
                 username=username,
                 email=email,
                 first_name=name.split(' ')[0] if ' ' in name else name,
-                last_name=' '.join(name.split(' ')[1:]) if ' ' in name else '',
+                last_name=' '.join(name.split(' ')[1:] if ' ' in name else ''),
             )
             user.set_unusable_password()
             user.save()
@@ -509,9 +508,6 @@ def google_callback(request: HttpRequest):
     except requests.RequestException as e:
         messages.error(request, f'Google login failed - {str(e)}')
         return redirect('login')
-    except json.JSONDecodeError:
-        messages.error(request, 'Google login failed - invalid response from Google')
-        return redirect('login')
 
 @user_required
 def checkout(request: HttpRequest):
@@ -522,19 +518,94 @@ def checkout(request: HttpRequest):
 
     cart_data: list[dict[str, Any]] = []
     total_price: float = 0
-    for product_id, quantity in cart_items.items():
+    errors = []
+    for product_id_str, item_data in cart_items.items():
         try:
+            product_id = int(product_id_str)
             product = Product.objects.get(id=product_id)
+            quantity = item_data['quantity']
+            size = item_data.get('size')
             price = product.discount_price if product.discount_price else product.price
             item_total = float(price * quantity)
+            if product.is_fashion and size and size not in product.available_sizes:
+                errors.append(f"Size '{size}' not available for {product.name}")
             cart_data.append({
                 'product': product,
-                'quantity': int(quantity),
+                'quantity': quantity,
+                'size': size,
                 'total': item_total
             })
             total_price += item_total
-        except Product.DoesNotExist:
+        except (Product.DoesNotExist, KeyError, ValueError):
             pass
+
+    for error in errors:
+        messages.error(request, error)
+    if errors:
+        # Re-render with errors
+        banner_id = request.GET.get('banner')
+        banner = None
+        if banner_id:
+            try:
+                banner = Banner.objects.get(id=banner_id)
+            except Banner.DoesNotExist:
+                pass
+        form = CheckoutForm()
+        return render(request, 'checkout.html', {
+            'form': form,
+            'cart_items': cart_data,
+            'total_price': total_price,
+            'banner': banner
+        })
+
+    banner_id = request.GET.get('banner')
+    banner = None
+    if banner_id:
+        try:
+            banner = Banner.objects.get(id=banner_id)
+        except Banner.DoesNotExist:
+            pass
+
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            address = form.cleaned_data['address']
+            mobile_number = form.cleaned_data['mobile_number']
+
+            # Create NewOrder entries for each cart item
+            for product_id_str, item_data in cart_items.items():
+                product_id = int(product_id_str)
+                product = Product.objects.get(id=product_id)
+                quantity = item_data['quantity']
+                size = item_data.get('size') or ''
+                price = product.discount_price if product.discount_price else product.price
+                item_total = float(price * quantity)
+                new_order = NewOrder.objects.create(
+                    user=request.user,
+                    address=address,
+                    mobile_number=mobile_number,
+                    product_code=str(product.pk),
+                    product_name=product.name,
+                    product_image=product.image,
+                    quantity=quantity,
+                    size=size,
+                    price=item_total
+                )
+                save_order_to_sheets(new_order)
+
+            # Clear the cart
+            request.session['cart'] = {}
+            messages.success(request, 'Order placed successfully!')
+            return redirect('home')
+    else:
+        form = CheckoutForm()
+
+    return render(request, 'checkout.html', {
+        'form': form,
+        'cart_items': cart_data,
+        'total_price': total_price,
+        'banner': banner
+    })
 
     banner_id = request.GET.get('banner')
     banner = None
@@ -553,7 +624,7 @@ def checkout(request: HttpRequest):
             # Create NewOrder entries for each cart item
             for item in cart_data:
                 product: Product = item['product']
-                NewOrder.objects.create(
+                new_order = NewOrder.objects.create(
                     user=request.user,
                     address=address,
                     mobile_number=mobile_number,
@@ -562,6 +633,7 @@ def checkout(request: HttpRequest):
                     product_image=product.image,
                     quantity=item['quantity']
                 )
+                save_order_to_sheets(new_order)
 
             # Clear the cart
             request.session['cart'] = {}
@@ -576,3 +648,4 @@ def checkout(request: HttpRequest):
         'total_price': total_price,
         'banner': banner
     })
+

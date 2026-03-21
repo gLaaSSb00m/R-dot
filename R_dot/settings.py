@@ -161,3 +161,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 FACEBOOK_APP_ID = os.getenv('FACEBOOK_APP_ID', 'your_facebook_app_id_here')
 FACEBOOK_APP_SECRET = os.getenv('FACEBOOK_APP_SECRET', 'your_facebook_app_secret_here')
 FACEBOOK_REDIRECT_URI = os.getenv('FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
+
+
+

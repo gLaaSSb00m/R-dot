@@ -21,6 +21,11 @@ if Type.objects.count() == 0:
 else:
     fashion_type = Type.objects.first()
 
+# Create Gadget type
+if not Type.objects.filter(name='Gadget').exists():
+    gadget_type = Type.objects.create(name='Gadget')
+    print(f"Created Type: {gadget_type.name}")
+
 # Create a Category if none exists
 if Category.objects.count() == 0:
     category = Category.objects.create(type=fashion_type, name='General')
@@ -53,16 +58,22 @@ else:
 if Product.objects.count() == 0:
     product = Product.objects.create(
         subcategory=subcategory,
-        name='Sample Product',
+        name='Sample Fashion Product',
         image='products/E96A_blk.png',
         price=999.00,
         discount_price=799.00,
-        description='This is a sample product description'
+        description='This is a sample fashion product description with sizes'
     )
-    print(f"Created Product: {product.name} with image {product.image}")
+    product.is_fashion = True
+    product.available_sizes = ['S', 'M', 'L', 'XL', '2XL']
+    product.save()
+    print(f"Created Fashion Product: {product.name} with sizes {product.available_sizes}")
 else:
     product = Product.objects.first()
     if product:
-        print(f"Existing Product: {product.name} with image {product.image}")
+        product.is_fashion = True
+        product.available_sizes = ['S', 'M', 'L', 'XL', '2XL']
+        product.save()
+        print(f"Updated existing Product: {product.name} to Fashion with sizes {product.available_sizes}")
 
 print("\nDone! Media files are now linked to database records.")

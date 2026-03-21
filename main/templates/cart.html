@@ -10,11 +10,14 @@
             <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" />
             <div class="item-details">
                 <h3>{{ item.product.name }}</h3>
+                {% if item.size %}
+                <p class="size-label">Size: <strong>{{ item.size }}</strong></p>
+                {% endif %}
                 <p class="price">৳{{ item.product.price }}</p>
                 <div class="quantity-controls">
-                    <button class="qty-btn" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:-1 }})">-</button>
+                    <button class="qty-btn" onclick="updateQuantity('{{ item.id }}', {{ item.quantity|add:-1 }})">-</button>
                     <span class="quantity">{{ item.quantity }}</span>
-                    <button class="qty-btn" onclick="updateQuantity({{ item.id }}, {{ item.quantity|add:1 }})">+</button>
+                    <button class="qty-btn" onclick="updateQuantity('{{ item.id }}', {{ item.quantity|add:1 }})">+</button>
                 </div>
             </div>
             <div class="item-total">
