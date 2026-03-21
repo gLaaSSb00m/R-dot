@@ -9,17 +9,14 @@ logger = logging.getLogger(__name__)
 APPS_SCRIPT_URL = getattr(settings, 'APPS_SCRIPT_URL', '')
 
 def save_order_to_sheets(order: NewOrder):
-    """
-    Save order data to Google Sheet via Apps Script.
-    Columns: Timestamp, Username, Address, Mobile, Product Code, Quantity, Price, Size
-    """
+ 
     if not APPS_SCRIPT_URL:
         logger.warning("APPS_SCRIPT_URL not configured - skipping sheet save")
         return
         
     try:
         # Use order.price (total)
-        total_price: float = float(order.price)
+        total_price: float = float(order.price)  # type: ignore
 
         # Username
         username: str = order.user.username if order.user and order.user.username else "Anonymous"
