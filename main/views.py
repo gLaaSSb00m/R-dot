@@ -309,14 +309,13 @@ def cart_count(request: HttpRequest):
     total_quantity = sum(item['quantity'] for item in cart.values()) if cart else 0
     return JsonResponse({'count': total_quantity})
 
-# Facebook OAuth Configuration
-FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', 'your_facebook_app_id')
-FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', 'your_facebook_app_secret')
+# OAuth configs from settings.py (no fallbacks - will raise KeyError if missing)
+FACEBOOK_APP_ID = settings.FACEBOOK_APP_ID
+FACEBOOK_APP_SECRET = settings.FACEBOOK_APP_SECRET
 FACEBOOK_REDIRECT_URI = getattr(settings, 'FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
 
-# Google OAuth Configuration
-GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', 'Orders')
-GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', '3db1cd8534ea96c2b88a8c5f4d7cb589ce5959db')
+GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
+GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
 GOOGLE_REDIRECT_URI = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
 
 def facebook_login(_: HttpRequest) -> HttpResponseRedirect:
@@ -590,48 +589,6 @@ def checkout(request: HttpRequest):
                     quantity=quantity,
                     size=size,
                     price=item_total
-                )
-                save_order_to_sheets(new_order)
-
-            # Clear the cart
-            request.session['cart'] = {}
-            messages.success(request, 'Order placed successfully!')
-            return redirect('home')
-    else:
-        form = CheckoutForm()
-
-    return render(request, 'checkout.html', {
-        'form': form,
-        'cart_items': cart_data,
-        'total_price': total_price,
-        'banner': banner
-    })
-
-    banner_id = request.GET.get('banner')
-    banner = None
-    if banner_id:
-        try:
-            banner = Banner.objects.get(id=banner_id)
-        except Banner.DoesNotExist:
-            pass
-
-    if request.method == 'POST':
-        form = CheckoutForm(request.POST)
-        if form.is_valid():
-            address = form.cleaned_data['address']
-            mobile_number = form.cleaned_data['mobile_number']
-
-            # Create NewOrder entries for each cart item
-            for item in cart_data:
-                product: Product = item['product']
-                new_order = NewOrder.objects.create(
-                    user=request.user,
-                    address=address,
-                    mobile_number=mobile_number,
-                    product_code=str(product.pk),  # Using product ID as code
-                    product_name=product.name,
-                    product_image=product.image,
-                    quantity=item['quantity']
                 )
                 save_order_to_sheets(new_order)
 

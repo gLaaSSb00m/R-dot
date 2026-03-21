@@ -1,17 +1,22 @@
 import requests
 from django.core.exceptions import ObjectDoesNotExist
 import logging
+from django.conf import settings
 from .models import NewOrder
 
 logger = logging.getLogger(__name__)
 
-APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz_x4y1xhXBfDQmajQfGo5yKujP_jm2GuMWe3qzmf02-TIGXoUcIjFxbLs9uLsvpgFV/exec"
+APPS_SCRIPT_URL = getattr(settings, 'APPS_SCRIPT_URL', '')
 
 def save_order_to_sheets(order: NewOrder):
     """
     Save order data to Google Sheet via Apps Script.
     Columns: Timestamp, Username, Address, Mobile, Product Code, Quantity, Price, Size
     """
+    if not APPS_SCRIPT_URL:
+        logger.warning("APPS_SCRIPT_URL not configured - skipping sheet save")
+        return
+        
     try:
         # Use order.price (total)
         total_price: float = float(order.price)
@@ -48,4 +53,3 @@ def save_order_to_sheets(order: NewOrder):
         error_msg = f"Error saving to Apps Script: {str(e)}"
         print(error_msg)
         logger.error(f"Error saving order {getattr(order, 'id', 'unknown')}: {str(e)}")
-
