@@ -1,4 +1,5 @@
 from django.db import models
+from typing import List
 
 class Type(models.Model):
     name = models.CharField(max_length=100)
@@ -39,7 +40,7 @@ class Product(models.Model):
     stock_out = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     is_fashion = models.BooleanField(default=False)
-    available_sizes = models.JSONField(default=list, blank=True)  # e.g. ['S', 'M', 'L']
+    available_sizes: List[str] = models.JSONField(default=list, blank=True)  # e.g. ['S', 'M', 'L']
 
     def __str__(self):
         return self.name

@@ -41,7 +41,7 @@ class ProductAdminForm(forms.ModelForm):
         return instance
 
 @admin.register(Product)
-class ProductAdmin(admin.ModelAdmin[Product]):
+class ProductAdmin(admin.ModelAdmin):
     form = ProductAdminForm
     fieldsets = [
         ('Basic', {'fields': ['name', 'subcategory']}),
