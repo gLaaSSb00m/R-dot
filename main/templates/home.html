@@ -5,7 +5,7 @@
     {% for banner in banners %}
     <div class="banner">
         <img src="{{ banner.image.url }}" alt="Banner Image" />
-        <div class="banner-overlay">
+        {% comment %} <div class="banner-overlay">
             {% if banner.product and not banner.product.stock_out %}
                 <form method="post" action="{% url 'add_to_cart' %}" class="banner-cart-form">
                     {% csrf_token %}
@@ -15,7 +15,7 @@
             {% else %}
                 <button class="btn-shop" disabled>Shop Now</button>
             {% endif %}
-        </div>
+        </div> {% endcomment %}
     </div>
     {% endfor %}
 </section>
