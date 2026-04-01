@@ -29,8 +29,7 @@ class ProductAdminForm(forms.ModelForm):
         if instance and not instance.is_fashion:
             self.fields['sizes'].widget = forms.HiddenInput()
             self.initial['sizes'] = []
-        elif not self.instance.is_fashion:
-            self.fields['sizes'].widget = forms.HiddenInput()
+        # Always show checkboxes for new products - user sets is_fashion
 
     def save(self, commit: bool = True) -> Product:
         instance = super().save(commit=False)

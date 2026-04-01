@@ -5,7 +5,7 @@ from .models import Category, Subcategory
 
 def cart_item_count(request: HttpRequest) -> Dict[str, Any]:
     cart = request.session.get('cart', {})
-    total_quantity = sum(cart.values()) if cart else 0
+    total_quantity = sum(item['quantity'] for item in cart.values()) if cart else 0
     return {'cart_item_count': total_quantity}
 
 

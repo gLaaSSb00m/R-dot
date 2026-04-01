@@ -40,12 +40,12 @@
             <form method="post" action="{% url 'add_to_cart' %}" onsubmit="return addToCart(event, this);" class="add-to-cart-form">
                 {% csrf_token %}
                 <input type="hidden" name="product_id" value="{{ product.id }}">
-                {% if product.is_fashion %}
+                {% if product.is_fashion and product.available_sizes %}
                 <div class="size-selector">
                     <label for="size">Size:</label>
                     <select name="size" id="size" required>
                         <option value="">Select size</option>
-                        {% for size in 'S,M,L,XL,2XL' | split:',' %}
+                        {% for size in product.available_sizes %}
                         <option value="{{ size }}">{{ size }}</option>
                         {% endfor %}
                     </select>
