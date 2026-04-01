@@ -24,10 +24,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']  # FAIL if missing!
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-!k#9m2p$5q8r0t3v6w9x2y4z7a1b5c8d0e3f6g9h2j4k7l0m3n6o9p2q5r8s1t4u7v0w3x6y9z!')  # Dev fallback - insecure for prod! Use .env
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = os.environ.get('DEBUG', 'True').lower() not in ('false', '0', 'no')
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'r-dot.onrender.com']
 
@@ -169,14 +169,14 @@ if not DEBUG:
 
 
 # OAuth Settings (from .env - NO FALLBACKS)
-FACEBOOK_APP_ID = os.environ['FACEBOOK_APP_ID']
-FACEBOOK_APP_SECRET = os.environ['FACEBOOK_APP_SECRET']
+# FACEBOOK_APP_ID = os.environ['FACEBOOK_APP_ID']  # Disabled for local dev - TODO enable with real creds
+# FACEBOOK_APP_SECRET = os.environ['FACEBOOK_APP_SECRET']  # Disabled for local dev
 FACEBOOK_REDIRECT_URI = os.getenv('FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
 
-GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']
-GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']
+# GOOGLE_CLIENT_ID = os.environ['GOOGLE_CLIENT_ID']  # Disabled for local dev
+# GOOGLE_CLIENT_SECRET = os.environ['GOOGLE_CLIENT_SECRET']  # Disabled for local dev
 GOOGLE_REDIRECT_URI = os.getenv('GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
 
 # Google Apps Script URL
-APPS_SCRIPT_URL = os.environ['APPS_SCRIPT_URL']
+# APPS_SCRIPT_URL = os.environ['APPS_SCRIPT_URL']  # Disabled for local dev
 

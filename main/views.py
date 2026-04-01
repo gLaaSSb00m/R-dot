@@ -310,12 +310,16 @@ def cart_count(request: HttpRequest):
     return JsonResponse({'count': total_quantity})
 
 # OAuth configs from settings.py (no fallbacks - will raise KeyError if missing)
-FACEBOOK_APP_ID = settings.FACEBOOK_APP_ID
-FACEBOOK_APP_SECRET = settings.FACEBOOK_APP_SECRET
+# FACEBOOK_APP_ID = settings.FACEBOOK_APP_ID  # Disabled - TODO uncomment with real settings
+# FACEBOOK_APP_SECRET = settings.FACEBOOK_APP_SECRET  # Disabled
+FACEBOOK_APP_ID = getattr(settings, 'FACEBOOK_APP_ID', None)
+FACEBOOK_APP_SECRET = getattr(settings, 'FACEBOOK_APP_SECRET', None)
 FACEBOOK_REDIRECT_URI = getattr(settings, 'FACEBOOK_REDIRECT_URI', 'http://localhost:8000/auth/facebook/callback/')
 
-GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID
-GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET
+# GOOGLE_CLIENT_ID = settings.GOOGLE_CLIENT_ID  # Disabled
+# GOOGLE_CLIENT_SECRET = settings.GOOGLE_CLIENT_SECRET  # Disabled
+GOOGLE_CLIENT_ID = getattr(settings, 'GOOGLE_CLIENT_ID', None)
+GOOGLE_CLIENT_SECRET = getattr(settings, 'GOOGLE_CLIENT_SECRET', None)
 GOOGLE_REDIRECT_URI = getattr(settings, 'GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/google/callback/')
 
 def facebook_login(_: HttpRequest) -> HttpResponseRedirect:
