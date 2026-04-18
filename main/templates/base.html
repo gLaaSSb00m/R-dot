@@ -48,7 +48,7 @@
         <nav class="main-nav">
             <button class="menu-toggle">&#9776;</button>
             <div class="logo">
-                <a href="{% url 'home' %}?type={{ selected_type }}">R dot</a>
+                <a href="{% url 'home' %}?type={{ selected_type }}"><img src="{% static 'images/icon_black.png' %}" alt="R dot" style="height: 40px; width: auto;"></a>
             </div>
             {% if nav_subcategories %}
             <div class="subcategory-tabs-container">
